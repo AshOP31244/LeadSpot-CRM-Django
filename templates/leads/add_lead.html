@@ -1,0 +1,1005 @@
+{% extends "leads/base.html" %}
+{% block title %}Add Lead | LeadSpot{% endblock %}
+
+{% block content %}
+<style>
+  /* Previous CSS remains exactly the same... */
+  /* (I'm keeping your existing CSS to save space) */
+  
+  :root {
+    --primary: #1a1a1a;
+    --primary-hover: #333;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e5e5e5;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --success: #16a34a;
+    --error: #ef4444;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.1);
+    --shadow-lg: 0 4px 6px rgba(0,0,0,0.1);
+  }
+
+  body {
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  }
+
+  .navbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .navbar-brand {
+    font-size: 20px;
+    font-weight: 600;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .nav-icon:hover {
+    border-color: var(--text);
+    background: var(--bg);
+  }
+
+  .container {
+    margin-top: 64px;
+    padding: 32px;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+
+  .page-title {
+    font-size: 32px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+
+  .page-subtitle {
+    color: var(--text-secondary);
+    font-size: 16px;
+  }
+
+  .form-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 40px;
+    box-shadow: var(--shadow);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--bg);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .required {
+    color: var(--error);
+  }
+
+  .optional {
+    color: var(--text-muted);
+    font-weight: 400;
+    font-size: 12px;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    background: var(--card-bg);
+    transition: all 0.2s;
+  }
+
+  input:focus,
+  select:focus {
+    outline: none;
+    border-color: var(--text);
+    box-shadow: 0 0 0 3px rgba(0,0,0,0.05);
+  }
+
+  input.error {
+    border-color: var(--error);
+  }
+
+  input.success {
+    border-color: var(--success);
+  }
+
+  .phone-wrapper {
+    display: flex;
+    gap: 8px;
+  }
+
+  .phone-prefix {
+    padding: 12px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 500;
+    min-width: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .phone-wrapper input {
+    flex: 1;
+  }
+
+  .help-text {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  .error-text {
+    font-size: 12px;
+    color: var(--error);
+    margin-top: 4px;
+    display: none;
+  }
+
+  .error-text.show {
+    display: block;
+  }
+
+  .email-toggle-section {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 20px;
+    margin-bottom: 32px;
+  }
+
+  .toggle-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .toggle-label {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .toggle-switch {
+    position: relative;
+    width: 48px;
+    height: 26px;
+    background: var(--border);
+    border-radius: 13px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .toggle-switch.active {
+    background: var(--success);
+  }
+
+  .toggle-slider {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  }
+
+  .toggle-switch.active .toggle-slider {
+    transform: translateX(22px);
+  }
+
+  .toggle-description {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: var(--radius-sm);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background: var(--primary-hover);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--text);
+  }
+
+  /* ============================================
+     DUPLICATE DETECTION STYLES
+     ============================================ */
+  
+  .duplicate-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    margin-top: 4px;
+    z-index: 1000;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+  }
+
+  .duplicate-suggestions.show {
+    display: block;
+  }
+
+  .suggestions-header {
+    padding: 12px 16px;
+    background: #fff8e1;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #f59e0b;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .suggestions-header svg {
+    flex-shrink: 0;
+  }
+
+  .suggestion-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .suggestion-item:last-child {
+    border-bottom: none;
+  }
+
+  .suggestion-item:hover {
+    background: var(--bg);
+  }
+
+  .suggestion-company {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .suggestion-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .suggestion-detail {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .suggestion-stage {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+  }
+
+  .suggestion-stage.prospect {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+  }
+
+  .suggestion-stage.requirement_yes {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+  }
+
+  .suggestion-stage.regret {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+  }
+
+  .suggestion-stage.future {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+  }
+
+  .suggestion-stage.customer {
+    background: rgba(22, 163, 74, 0.1);
+    color: #16a34a;
+  }
+
+  .match-score {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    background: rgba(99, 102, 241, 0.1);
+    color: #6366f1;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .no-suggestions {
+    padding: 32px 16px;
+    text-align: center;
+    color: var(--text-secondary);
+    font-size: 13px;
+  }
+
+  .checking-duplicates {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--info);
+    margin-top: 4px;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  .spinner {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--border);
+    border-top-color: var(--info);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 16px;
+    }
+
+    .form-card {
+      padding: 24px;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .form-actions {
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+</style>
+
+<nav class="navbar">
+  <div class="navbar-brand">Lead Spot</div>
+  <div class="navbar-actions">
+    <a href="{% url 'lead_list' %}" class="nav-icon" title="Back to Leads">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+      </svg>
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Add New Lead</h1>
+    <p class="page-subtitle">Fill in the details below to add a new lead to your pipeline</p>
+  </div>
+
+  <div class="form-card">
+    <form method="POST" id="leadForm">
+      {% csrf_token %}
+
+      <!-- Company Information -->
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          </svg>
+        </div>
+        <h3 class="section-title">Company Information</h3>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group full-width">
+          <label for="company_name">
+            Company Name
+            <span class="required">*</span>
+          </label>
+          <input type="text" 
+                 id="company_name" 
+                 name="company_name" 
+                 placeholder="Enter company name"
+                 autocomplete="off"
+                 required>
+          <span class="checking-duplicates" id="companyChecking" style="display: none;">
+            <span class="spinner"></span>
+            Checking for duplicates...
+          </span>
+          <div class="duplicate-suggestions" id="companySuggestions"></div>
+          <span class="error-text" id="company_name_error"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="sector">
+            Industry Sector
+            <span class="required">*</span>
+          </label>
+          <select id="sector" name="sector" required>
+            <option value="">Select sector</option>
+            <option value="oil-gas">Oil & Gas</option>
+            <option value="petrochemical">Petrochemical</option>
+            <option value="power">Power Generation</option>
+            <option value="steel">Steel & Metal</option>
+            <option value="cement">Cement</option>
+            <option value="chemical">Chemical & Fertilizer</option>
+            <option value="pharmaceutical">Pharmaceutical</option>
+            <option value="food-beverage">Food & Beverage</option>
+            <option value="textile">Textile</option>
+            <option value="paper-pulp">Paper & Pulp</option>
+            <option value="automotive">Automotive</option>
+            <option value="mining">Mining</option>
+            <option value="water-treatment">Water Treatment</option>
+            <option value="construction">Construction & Infrastructure</option>
+            <option value="epc">EPC Contractor</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="state">
+            State
+            <span class="required">*</span>
+          </label>
+          <select id="state" name="state" required>
+            <option value="">Select state</option>
+            <option value="Andhra Pradesh">Andhra Pradesh</option>
+            <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+            <option value="Assam">Assam</option>
+            <option value="Bihar">Bihar</option>
+            <option value="Chhattisgarh">Chhattisgarh</option>
+            <option value="Goa">Goa</option>
+            <option value="Gujarat">Gujarat</option>
+            <option value="Haryana">Haryana</option>
+            <option value="Himachal Pradesh">Himachal Pradesh</option>
+            <option value="Jharkhand">Jharkhand</option>
+            <option value="Karnataka">Karnataka</option>
+            <option value="Kerala">Kerala</option>
+            <option value="Madhya Pradesh">Madhya Pradesh</option>
+            <option value="Maharashtra">Maharashtra</option>
+            <option value="Manipur">Manipur</option>
+            <option value="Meghalaya">Meghalaya</option>
+            <option value="Mizoram">Mizoram</option>
+            <option value="Nagaland">Nagaland</option>
+            <option value="Odisha">Odisha</option>
+            <option value="Punjab">Punjab</option>
+            <option value="Rajasthan">Rajasthan</option>
+            <option value="Sikkim">Sikkim</option>
+            <option value="Tamil Nadu">Tamil Nadu</option>
+            <option value="Telangana">Telangana</option>
+            <option value="Tripura">Tripura</option>
+            <option value="Uttar Pradesh">Uttar Pradesh</option>
+            <option value="Uttarakhand">Uttarakhand</option>
+            <option value="West Bengal">West Bengal</option>
+            <option value="Delhi">Delhi</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="city">
+            City
+            <span class="required">*</span>
+          </label>
+          <input type="text" 
+                 id="city" 
+                 name="city" 
+                 placeholder="Enter city name"
+                 required>
+          <span class="help-text">Enter the city where the company is located</span>
+        </div>
+
+        <div class="form-group">
+          <label for="source">
+            Lead Source
+            <span class="required">*</span>
+          </label>
+          <select id="source" name="source" required>
+            <option value="">Select source</option>
+            <option value="Exhibition">Exhibition</option>
+            <option value="Email/Old Client">Email/Old Client</option>
+            <option value="General Call">General Call</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Contact Information -->
+      <div class="section-header">
+        <div class="section-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3 class="section-title">Contact Details</h3>
+      </div>
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="contact_name">
+            Contact Name
+            <span class="required">*</span>
+          </label>
+          <input type="text" 
+                 id="contact_name" 
+                 name="contact_name" 
+                 placeholder="Enter contact person name"
+                 required>
+        </div>
+
+        <div class="form-group">
+          <label for="department">
+            Department
+            <span class="optional">(optional)</span>
+          </label>
+          <input type="text" 
+                 id="department" 
+                 name="department" 
+                 placeholder="e.g., Procurement, Engineering">
+        </div>
+
+        <div class="form-group">
+          <label for="contact_email">
+            Email Address
+            <span class="required">*</span>
+          </label>
+          <input type="email" 
+                 id="contact_email" 
+                 name="contact_email" 
+                 placeholder="contact@company.com"
+                 autocomplete="off"
+                 required>
+          <span class="checking-duplicates" id="emailChecking" style="display: none;">
+            <span class="spinner"></span>
+            Checking for duplicates...
+          </span>
+          <div class="duplicate-suggestions" id="emailSuggestions"></div>
+        </div>
+
+        <div class="form-group">
+          <label for="contact_phone">
+            Phone Number
+            <span class="required">*</span>
+          </label>
+          <div class="phone-wrapper">
+            <div class="phone-prefix">+91</div>
+            <div style="flex: 1; position: relative;">
+              <input type="tel" 
+                     id="contact_phone" 
+                     name="contact_phone" 
+                     placeholder="9876543210"
+                     maxlength="10"
+                     autocomplete="off"
+                     required>
+              <span class="checking-duplicates" id="phoneChecking" style="display: none;">
+                <span class="spinner"></span>
+                Checking...
+              </span>
+              <div class="duplicate-suggestions" id="phoneSuggestions"></div>
+            </div>
+          </div>
+          <span class="help-text">Enter 10-digit mobile number</span>
+        </div>
+      </div>
+
+      <!-- Email Toggle -->
+      <div class="email-toggle-section">
+        <div class="toggle-header">
+          <div class="toggle-label">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+            Send Welcome Email
+          </div>
+          <div class="toggle-switch" id="emailToggle">
+            <div class="toggle-slider"></div>
+          </div>
+          <input type="hidden" name="send_email" id="send_email" value="false">
+        </div>
+        <p class="toggle-description">
+          Enable this to automatically send an introductory email to the contact person after adding the lead.
+        </p>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <a href="{% url 'lead_list' %}" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5M12 19l-7-7 7-7"></path>
+          </svg>
+          Cancel
+        </a>
+        <button type="submit" class="btn btn-primary" id="submitBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+            <polyline points="17 21 17 13 7 13 7 21"></polyline>
+            <polyline points="7 3 7 8 15 8"></polyline>
+          </svg>
+          Save Lead
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // ============================================
+  // DUPLICATE DETECTION SYSTEM
+  // ============================================
+  
+  let debounceTimer = null;
+  const DEBOUNCE_DELAY = 500; // milliseconds
+  
+  const companyInput = document.getElementById('company_name');
+  const emailInput = document.getElementById('contact_email');
+  const phoneInput = document.getElementById('contact_phone');
+  
+  // Debounce function
+  function debounce(func, delay) {
+    return function(...args) {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
+  
+  // Check for duplicates
+  async function checkDuplicates(field, value) {
+    if (!value || value.length < 3) {
+      hideSuggestions(field);
+      return;
+    }
+    
+    const params = new URLSearchParams();
+    if (field === 'company') params.append('company_name', value);
+    if (field === 'email') params.append('email', value);
+    if (field === 'phone') params.append('phone', value);
+    
+    try {
+      const response = await fetch(`/leads/api/check-duplicates/?${params}`);
+      const data = await response.json();
+      
+      if (data.matches && data.matches.length > 0) {
+        showSuggestions(field, data.matches);
+      } else {
+        hideSuggestions(field);
+      }
+    } catch (error) {
+      console.error('Error checking duplicates:', error);
+      hideSuggestions(field);
+    }
+  }
+  
+  // Show suggestions panel
+  function showSuggestions(field, matches) {
+    const suggestionsId = field + 'Suggestions';
+    const checkingId = field + 'Checking';
+    const suggestionsDiv = document.getElementById(suggestionsId);
+    const checkingDiv = document.getElementById(checkingId);
+    
+    checkingDiv.style.display = 'none';
+    
+    let html = `
+      <div class="suggestions-header">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+          <line x1="12" y1="9" x2="12" y2="13"></line>
+          <line x1="12" y1="17" x2="12.01" y2="17"></line>
+        </svg>
+        Possible duplicates found (${matches.length})
+      </div>
+    `;
+    
+    matches.forEach(match => {
+      const detailUrl = getDetailUrl(match.stage_code, match.id);
+      html += `
+        <div class="suggestion-item" onclick="window.location.href='${detailUrl}'">
+          <div class="suggestion-company">${match.company_name}</div>
+          <div class="suggestion-details">
+            ${match.contact_email ? `
+              <div class="suggestion-detail">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+                ${match.contact_email}
+              </div>
+            ` : ''}
+            ${match.contact_phone ? `
+              <div class="suggestion-detail">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+                +91 ${match.contact_phone}
+              </div>
+            ` : ''}
+            <span class="suggestion-stage ${match.stage_code}">${match.stage}</span>
+            ${match.match_score < 100 ? `<span class="match-score">${match.match_score}% match</span>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    
+    suggestionsDiv.innerHTML = html;
+    suggestionsDiv.classList.add('show');
+  }
+  
+  // Hide suggestions
+  function hideSuggestions(field) {
+    const suggestionsId = field + 'Suggestions';
+    const checkingId = field + 'Checking';
+    const suggestionsDiv = document.getElementById(suggestionsId);
+    const checkingDiv = document.getElementById(checkingId);
+    
+    suggestionsDiv.classList.remove('show');
+    checkingDiv.style.display = 'none';
+  }
+  
+  // Get detail URL based on stage
+  function getDetailUrl(stageCode, leadId) {
+    const baseUrl = '/leads/';
+    switch(stageCode) {
+      case 'prospect':
+        return `${baseUrl}${leadId}/`;
+      case 'requirement_yes':
+        return `${baseUrl}requirement-yes/${leadId}/`;
+      case 'regret':
+        return `${baseUrl}regret-offers/${leadId}/`;
+      case 'future':
+        return `${baseUrl}future-requirements/${leadId}/`;
+      default:
+        return `${baseUrl}${leadId}/`;
+    }
+  }
+  
+  // Company name input
+  companyInput.addEventListener('input', debounce(function(e) {
+    const value = e.target.value.trim();
+    if (value.length >= 3) {
+      document.getElementById('companyChecking').style.display = 'inline-flex';
+      checkDuplicates('company', value);
+    } else {
+      hideSuggestions('company');
+    }
+  }, DEBOUNCE_DELAY));
+  
+  // Email input
+  emailInput.addEventListener('input', debounce(function(e) {
+    const value = e.target.value.trim();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(value)) {
+      document.getElementById('emailChecking').style.display = 'inline-flex';
+      checkDuplicates('email', value);
+    } else {
+      hideSuggestions('email');
+    }
+  }, DEBOUNCE_DELAY));
+  
+  // Phone input
+  phoneInput.addEventListener('input', function(e) {
+    // Only allow digits
+    this.value = this.value.replace(/\D/g, '');
+    if (this.value.length > 10) {
+      this.value = this.value.slice(0, 10);
+    }
+    
+    // Check for duplicates
+    if (this.value.length === 10) {
+      document.getElementById('phoneChecking').style.display = 'inline-flex';
+      debounce(() => checkDuplicates('phone', this.value), DEBOUNCE_DELAY)();
+    } else {
+      hideSuggestions('phone');
+    }
+  });
+  
+  // Close suggestions when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.form-group')) {
+      hideSuggestions('company');
+      hideSuggestions('email');
+      hideSuggestions('phone');
+    }
+  });
+  
+  // ============================================
+  // EMAIL TOGGLE
+  // ============================================
+  const emailToggle = document.getElementById('emailToggle');
+  const sendEmailInput = document.getElementById('send_email');
+  
+  emailToggle.addEventListener('click', function() {
+    this.classList.toggle('active');
+    sendEmailInput.value = this.classList.contains('active') ? 'true' : 'false';
+  });
+  
+  // ============================================
+  // FORM VALIDATION & SUBMISSION
+  // ============================================
+  const form = document.getElementById('leadForm');
+  const submitBtn = document.getElementById('submitBtn');
+  
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Hide all suggestions
+    hideSuggestions('company');
+    hideSuggestions('email');
+    hideSuggestions('phone');
+    
+    // Basic validation
+    let isValid = true;
+    const requiredFields = form.querySelectorAll('[required]');
+    
+    requiredFields.forEach(field => {
+      if (!field.value.trim()) {
+        isValid = false;
+        field.classList.add('error');
+      } else {
+        field.classList.remove('error');
+      }
+    });
+    
+    if (isValid) {
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Saving...';
+      form.submit();
+    }
+  });
+});
+</script>
+
+{% endblock %}

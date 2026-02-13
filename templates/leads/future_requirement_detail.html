@@ -1,0 +1,1477 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}{{ lead.company_name }} - Future Requirement{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary: #1a1a1a;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e5e5e5;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --error: #ef4444;
+    --purple: #9333ea;
+    --gradient-info: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding-bottom: 60px;
+  }
+
+  .container {
+    margin-top: 72px;
+    padding: 40px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .lead-header {
+    background: var(--gradient-info);
+    border-radius: 16px;
+    padding: 40px;
+    margin-bottom: 32px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  }
+
+  .lead-header::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+  }
+
+  .lead-title {
+    font-size: 36px;
+    font-weight: 700;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+
+  .lead-id {
+    font-family: "SF Mono", monospace;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 12px;
+    border-radius: 6px;
+    display: inline-block;
+  }
+
+  .stage-badge {
+    padding: 10px 20px;
+    border-radius: 24px;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--info);
+  }
+
+  .time-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .time-badge.overdue {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+  }
+
+  .time-badge.today {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+  }
+
+  /* Info Cards */
+  .info-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .info-item {
+    padding: 16px;
+    background: var(--bg);
+    border-radius: 10px;
+  }
+
+  .info-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+  }
+
+  .info-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Action Cards */
+  .action-card {
+    background: var(--card-bg);
+    border: 1.5px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  }
+
+  .action-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .action-title {
+    font-size: 18px;
+    font-weight: 700;
+    flex: 1;
+  }
+
+  /* Form Elements */
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+    margin-top: 24px;
+  }
+
+  .form-group {
+    margin-bottom: 0;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  .form-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: block;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .form-input,
+  .form-select,
+  .form-textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: 15px;
+    background: var(--card-bg);
+    color: var(--text);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .form-input:focus,
+  .form-select:focus,
+  .form-textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(26, 26, 26, 0.05);
+  }
+
+  .form-textarea {
+    min-height: 120px;
+    resize: vertical;
+  }
+
+  .btn {
+    padding: 14px 28px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    border: none;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), #333);
+    color: white;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    justify-content: center;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  }
+
+  .btn-success {
+    background: linear-gradient(135deg, var(--success), #15803d);
+    color: white;
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+  }
+
+  .btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(22, 163, 74, 0.4);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1.5px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    color: var(--text);
+  }
+
+  /* Timeline */
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .timeline::before {
+    content: "";
+    position: absolute;
+    left: 12px;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 32px;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -25px;
+    top: 4px;
+    width: 28px;
+    height: 28px;
+    background: var(--card-bg);
+    border: 3px solid var(--info);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 0 0 4px var(--card-bg);
+  }
+
+  .timeline-content {
+    background: var(--bg);
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 3px solid var(--info);
+  }
+
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .timeline-meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+  }
+
+  .timeline-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.5;
+  }
+
+  /* Remark Box */
+  .remark-box {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    margin-top: 16px;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* ============================================
+     CONVERSION MODAL STYLES
+     ============================================ */
+  .conversion-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .conversion-modal-overlay.show {
+    display: flex;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .conversion-modal {
+    background: white;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
+    display: flex;
+    flex-direction: column;
+  }
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .modal-header {
+    padding: 24px 32px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--gradient-info);
+    color: white;
+  }
+
+  .modal-title {
+    font-size: 20px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    color: white;
+  }
+
+  .modal-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .modal-body {
+    padding: 32px;
+    overflow-y: auto;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+    flex: 1;
+    min-height: 0; /* Critical: allows flex child to scroll */
+    max-height: 60vh; /* Ensure scrolling when content is long */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+  }
+
+  .modal-footer {
+    padding: 20px 32px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    flex-shrink: 0; /* Prevent footer from shrinking */
+  }
+
+  /* Tank Management */
+  .tank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .tank-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .add-btn,
+  .remove-btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: none;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .add-btn {
+    background: var(--success);
+    color: white;
+    margin-top: 12px;
+  }
+
+  .add-btn:hover {
+    background: #15803d;
+  }
+
+  .remove-btn {
+    background: var(--error);
+    color: white;
+    padding: 8px;
+  }
+
+  .remove-btn:hover {
+    background: #dc2626;
+  }
+
+  .required {
+    color: var(--error);
+    margin-left: 4px;
+  }
+
+  .error-message {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 12px 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    display: none;
+  }
+
+  .error-message.show {
+    display: block;
+    animation: shake 0.3s ease;
+  }
+
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-10px); }
+    75% { transform: translateX(10px); }
+  }
+
+  /* Responsive */
+  @media (max-width: 1200px) {
+    .info-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 20px;
+    }
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+    .tank-item {
+      grid-template-columns: 1fr;
+    }
+    .modal-body {
+      padding: 20px;
+    }
+  }
+</style>
+
+<div class="container">
+  <!-- Header -->
+  <div class="lead-header">
+    <div class="header-content">
+      <div class="header-top">
+        <div>
+          <h1 class="lead-title">{{ lead.company_name }}</h1>
+          <span class="lead-id">{{ lead.lead_code }}</span>
+        </div>
+        <span class="stage-badge">
+          Future Requirement
+        </span>
+      </div>
+      <div
+        style="
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 20px;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div
+            style="
+              width: 36px;
+              height: 36px;
+              background: rgba(255, 255, 255, 0.15);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+              <circle cx="12" cy="10" r="3"></circle>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 12px; opacity: 0.7">Location</div>
+            <div style="font-weight: 600">
+              {{ lead.city }}, {{ lead.state }}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div
+            style="
+              width: 36px;
+              height: 36px;
+              background: rgba(255, 255, 255, 0.15);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 12px; opacity: 0.7">Contact Person</div>
+            <div style="font-weight: 600">
+              {{ lead.contact_name|default:"Not specified" }}
+            </div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px">
+          <div
+            style="
+              width: 36px;
+              height: 36px;
+              background: rgba(255, 255, 255, 0.15);
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            "
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+          </div>
+          <div>
+            <div style="font-size: 12px; opacity: 0.7">Follow-up</div>
+            <div style="font-weight: 600">
+              {{ future_req.followup_date|naturalday|title }}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Future Requirement Details -->
+  <div class="info-card">
+    <h3 class="card-title">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <circle cx="12" cy="12" r="10"></circle>
+        <path d="M12 6v6l4 2"></path>
+      </svg>
+      Future Requirement Details
+    </h3>
+
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Client Type</div>
+        <div class="info-value">{{ future_req.client_type_main }}</div>
+        {% if future_req.client_type_detail %}
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+          {{ future_req.client_type_detail }}
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Phone Number</div>
+        <div class="info-value">
+          {{ lead.contact_phone|default:"Not available" }}
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Email Address</div>
+        <div class="info-value" style="word-break: break-all; font-size: 13px;">
+          {{ lead.contact_email|default:"Not available" }}
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Follow-up Date</div>
+        <div class="info-value">
+          {% now "Y-m-d" as today_str %}
+          {% if future_req.followup_date|date:"Y-m-d" < today_str %}
+            <span class="time-badge overdue">
+              ⚠️ {{ future_req.followup_date|naturalday|title }}
+            </span>
+          {% elif future_req.followup_date|date:"Y-m-d" == today_str %}
+            <span class="time-badge today">
+              🔔 Today
+            </span>
+          {% else %}
+            <span class="time-badge">
+              📅 {{ future_req.followup_date|naturalday|title }}
+            </span>
+          {% endif %}
+          <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+            {{ future_req.followup_date|date:"d M, Y" }}
+          </div>
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Created</div>
+        <div class="info-value">
+          {{ future_req.created_at|naturaltime }}
+        </div>
+        <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+          {{ future_req.created_at|date:"d M, Y • h:i A" }}
+        </div>
+      </div>
+
+      <div class="info-item">
+        <div class="info-label">Source</div>
+        <div class="info-value">{{ lead.source|default:"Not specified" }}</div>
+      </div>
+    </div>
+
+    <div style="margin-top: 24px;">
+      <div class="info-label">Remark</div>
+      <div class="remark-box">{{ future_req.remark }}</div>
+    </div>
+  </div>
+
+  <!-- Update Follow-up Form -->
+  <div class="action-card">
+    <div class="action-header">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M12 20h9"></path>
+        <path
+          d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+        ></path>
+      </svg>
+      <span class="action-title">Update Follow-up</span>
+    </div>
+
+    <form method="POST">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="update_followup">
+
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Actual Call Date</label>
+          <input type="date" name="actual_call_date" class="form-input" value="{% now 'Y-m-d' %}" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">New Follow-up Date</label>
+          <input type="date" name="followup_date" class="form-input" value="{{ future_req.followup_date|date:'Y-m-d' }}">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Update Remark</label>
+          <textarea name="remark" class="form-textarea" placeholder="Add follow-up notes...">{{ future_req.remark }}</textarea>
+        </div>
+      </div>
+
+      <div style="text-align: right; margin-top: 20px; display: flex; gap: 12px;">
+        <button type="submit" class="btn btn-primary">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+            ></path>
+          </svg>
+          Update Follow-up
+        </button>
+        <a href="{% url 'future_requirements_list' %}" class="btn btn-secondary">
+          Back to List
+        </a>
+      </div>
+    </form>
+  </div>
+
+  <!-- Convert to Active Requirement -->
+  <div class="action-card">
+    <div class="action-header">
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <path d="M22 4L12 14.01l-3-3"></path>
+      </svg>
+      <span class="action-title">Convert to Active Requirement</span>
+    </div>
+
+    <p style="margin-bottom: 20px; color: var(--text-secondary);">
+      When the client is ready to proceed, convert this future requirement to an active requirement to start the quotation process.
+    </p>
+
+    <button type="button" class="btn btn-success" onclick="openConversionModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <path d="M22 4L12 14.01l-3-3"></path>
+      </svg>
+      Convert to Requirement Yes
+    </button>
+  </div>
+
+  <!-- Call History -->
+  {% if call_history %}
+  <div class="info-card">
+    <h3 class="card-title">
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+        ></path>
+      </svg>
+      Call History ({{ call_history.count }} calls)
+    </h3>
+
+    <div class="timeline">
+      {% for call in call_history %}
+      <div class="timeline-item">
+        <div class="timeline-dot">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="12" r="12"></circle>
+          </svg>
+        </div>
+        <div class="timeline-content">
+          <div class="timeline-title">
+            {{ call.get_outcome_display }}
+          </div>
+          <div class="timeline-meta">
+            {{ call.actual_call_date|naturalday|title }} ({{ call.actual_call_date|date:"d M Y" }}) • 
+            {{ call.created_by.username }}
+            <span style="margin-left: 8px; opacity: 0.7;">
+              • {{ call.created_at|naturaltime }}
+            </span>
+          </div>
+          {% if call.remark %}
+          <div class="timeline-text">
+            {{ call.remark }}
+          </div>
+          {% else %}
+          <div class="timeline-text" style="color: var(--text-secondary); font-style: italic;">
+            No remark provided
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<!-- ============================================
+     CONVERSION MODAL
+     ============================================ -->
+<div class="conversion-modal-overlay" id="conversionModal">
+  <div class="conversion-modal">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+          <path d="M22 4L12 14.01l-3-3"></path>
+        </svg>
+        Convert to Requirement Yes
+      </h2>
+      <button type="button" class="modal-close" onclick="closeConversionModal()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+
+    <form method="POST" id="conversionForm">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="convert_to_requirement">
+      <input type="hidden" name="actual_call_date" value="{% now 'Y-m-d' %}">
+
+      <div class="modal-body">
+        <div class="error-message" id="conversionError"></div>
+
+        <!-- ✅ REUSED REQUIREMENT YES FORM STRUCTURE -->
+        <!-- Type of Client -->
+        <div class="form-group full-width">
+          <label for="client_type_main" class="form-label">
+            Type of Client <span class="required">*</span>
+          </label>
+          <select
+            id="client_type_main"
+            name="client_type_main"
+            class="form-select"
+            onchange="handleClientTypeChange(this.value)"
+            required
+          >
+            <option value="">-- Select Client Type --</option>
+            <option value="EPC">EPC</option>
+            <option value="CONSULTANT">Consultant</option>
+            <option value="CONTRACTOR">Contractor</option>
+            <option value="END_CLIENT">End Client</option>
+          </select>
+        </div>
+
+        <!-- Consultant Sub-options -->
+        <div id="consultant-options" style="display: none">
+          <div class="form-group full-width">
+            <label for="consultant_type" class="form-label">
+              Consultant Type <span class="required">*</span>
+            </label>
+            <select
+              id="consultant_type"
+              name="consultant_type"
+              class="form-select"
+              onchange="handleConsultantChange(this.value)"
+            >
+              <option value="">-- Select Consultant Type --</option>
+              <option value="Engineering Consultant">Engineering Consultant</option>
+              <option value="Design Engineering Consultant">Design Engineering Consultant</option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="consultant-other" style="display: none">
+          <div class="form-group full-width">
+            <label for="consultant_other_text" class="form-label">
+              Specify Consultant Type <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="consultant_other_text"
+              name="consultant_other_text"
+              class="form-input"
+              placeholder="Enter consultant type"
+            />
+          </div>
+        </div>
+
+        <!-- Contractor Sub-options -->
+        <div id="contractor-options" style="display: none">
+          <div class="form-group full-width">
+            <label for="contractor_type" class="form-label">
+              Contractor Type <span class="required">*</span>
+            </label>
+            <select
+              id="contractor_type"
+              name="contractor_type"
+              class="form-select"
+              onchange="handleContractorChange(this.value)"
+            >
+              <option value="">-- Select Contractor Type --</option>
+              <option value="Fire Contractor">Fire Contractor</option>
+              <option value="Government Contractor">Government Contractor</option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="contractor-other" style="display: none">
+          <div class="form-group full-width">
+            <label for="contractor_other_text" class="form-label">
+              Specify Contractor Type <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="contractor_other_text"
+              name="contractor_other_text"
+              class="form-input"
+              placeholder="Enter contractor type"
+            />
+          </div>
+        </div>
+
+        <!-- End Client Sub-options -->
+        <div id="endclient-options" style="display: none">
+          <div class="form-group full-width">
+            <label for="endclient_category" class="form-label">
+              End Client Category <span class="required">*</span>
+            </label>
+            <select
+              id="endclient_category"
+              name="endclient_category"
+              class="form-select"
+              onchange="handleEndClientChange(this.value)"
+            >
+              <option value="">-- Select Category --</option>
+              <option value="General Manufacturing Company">General Manufacturing Company</option>
+              <option value="Infrastructure and Real Estate">Infrastructure and Real Estate</option>
+              <option value="Chemical and Pharma">Chemical and Pharma</option>
+              <option value="Food, Beverage and Breweries">Food, Beverage and Breweries</option>
+              <option value="Logistics and Warehousing">Logistics and Warehousing</option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Tourism and Hospitality">Tourism and Hospitality</option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="endclient-other" style="display: none">
+          <div class="form-group full-width">
+            <label for="endclient_other_text" class="form-label">
+              Specify End Client Category <span class="required">*</span>
+            </label>
+            <input
+              type="text"
+              id="endclient_other_text"
+              name="endclient_other_text"
+              class="form-input"
+              placeholder="Enter end client category"
+            />
+          </div>
+        </div>
+
+        <!-- Tank Application -->
+        <div class="form-group full-width">
+          <label for="tank_application" class="form-label">
+            Tank Application <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="tank_application"
+            name="tank_application"
+            class="form-input"
+            placeholder="e.g., Water Storage, Chemical Storage, Fire Fighting"
+            required
+          />
+        </div>
+
+        <!-- Tank Details -->
+        <div class="form-group full-width">
+          <label class="form-label">
+            Tank Details <span class="required">*</span>
+          </label>
+          <div class="tank-list" id="tank-list">
+            <div class="tank-item">
+              <select name="tank_type[]" class="form-select" required>
+                <option value="">Tank Type</option>
+                <option value="Zincallum">Zincallum</option>
+                <option value="SecureStore">SecureStore</option>
+                <option value="FM Approved">FM Approved</option>
+                <option value="GFS Tank">GFS Tank</option>
+              </select>
+              <input
+                type="text"
+                name="tank_capacity[]"
+                class="form-input"
+                placeholder="Capacity (e.g., 1000 KL)"
+                required
+              />
+              <input
+                type="number"
+                name="tank_quantity[]"
+                class="form-input"
+                placeholder="Quantity"
+                min="1"
+                required
+              />
+              <button
+                type="button"
+                class="remove-btn"
+                onclick="removeTank(this)"
+                style="display: none"
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addTank()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Tank
+          </button>
+        </div>
+
+        <!-- Tank Location & Sales Person -->
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div class="form-group">
+            <label for="tank_location" class="form-label">Tank Location</label>
+            <input
+              type="text"
+              id="tank_location"
+              name="tank_location"
+              class="form-input"
+              placeholder="Enter tank installation location"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="assigned_sales_person" class="form-label">
+              Assigned Sales Person <span class="required">*</span>
+            </label>
+            <select
+              id="assigned_sales_person"
+              name="assigned_sales_person"
+              class="form-select"
+              required
+            >
+              <option value="">-- Select Sales Person --</option>
+              <option value="Aniket">Aniket</option>
+              <option value="Manisha">Manisha</option>
+              <option value="Kranti">Kranti</option>
+              <option value="Bipin">Bipin</option>
+              <option value="Jayan">Jayan</option>
+              <option value="Priyabhrata">Priyabhrata</option>
+              <option value="Siva">Siva</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Expected Delivery Date -->
+        <div class="form-group">
+          <label for="expected_delivery_date" class="form-label">
+            Expected Delivery Date of Tank
+          </label>
+          <input
+            type="date"
+            id="expected_delivery_date"
+            name="expected_delivery_date"
+            class="form-input"
+          />
+        </div>
+
+        <!-- Remark -->
+        <div class="form-group full-width">
+          <label for="remark" class="form-label">
+            Remark <span class="required">*</span>
+          </label>
+          <textarea
+            id="remark"
+            name="remark"
+            class="form-textarea"
+            placeholder="Enter detailed discussion notes, client requirements, and next steps..."
+            required
+          ></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeConversionModal()">
+          Cancel
+        </button>
+        <button type="submit" class="btn btn-success" id="submitConversionBtn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <path d="M22 4L12 14.01l-3-3"></path>
+          </svg>
+          Convert to Requirement Yes
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// ============================================
+// CONVERSION MODAL CONTROL
+// ============================================
+function openConversionModal() {
+  document.getElementById('conversionModal').classList.add('show');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeConversionModal() {
+  document.getElementById('conversionModal').classList.remove('show');
+  document.body.style.overflow = 'auto';
+}
+
+// Close on overlay click
+document.getElementById('conversionModal').addEventListener('click', function(e) {
+  if (e.target === this) {
+    closeConversionModal();
+  }
+});
+
+// Close on ESC key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeConversionModal();
+  }
+});
+
+// ============================================
+// CONDITIONAL FIELD LOGIC (REUSED FROM PROSPECT)
+// ============================================
+function handleClientTypeChange(value) {
+  // Hide all conditional sections
+  document.getElementById('consultant-options').style.display = 'none';
+  document.getElementById('consultant-other').style.display = 'none';
+  document.getElementById('contractor-options').style.display = 'none';
+  document.getElementById('contractor-other').style.display = 'none';
+  document.getElementById('endclient-options').style.display = 'none';
+  document.getElementById('endclient-other').style.display = 'none';
+
+  // Clear values
+  document.getElementById('consultant_type').value = '';
+  document.getElementById('consultant_other_text').value = '';
+  document.getElementById('contractor_type').value = '';
+  document.getElementById('contractor_other_text').value = '';
+  document.getElementById('endclient_category').value = '';
+  document.getElementById('endclient_other_text').value = '';
+
+  // Show relevant section
+  if (value === 'CONSULTANT') {
+    document.getElementById('consultant-options').style.display = 'block';
+  } else if (value === 'CONTRACTOR') {
+    document.getElementById('contractor-options').style.display = 'block';
+  } else if (value === 'END_CLIENT') {
+    document.getElementById('endclient-options').style.display = 'block';
+  }
+}
+
+function handleConsultantChange(value) {
+  const otherDiv = document.getElementById('consultant-other');
+  otherDiv.style.display = value === 'Other' ? 'block' : 'none';
+  if (value !== 'Other') {
+    document.getElementById('consultant_other_text').value = '';
+  }
+}
+
+function handleContractorChange(value) {
+  const otherDiv = document.getElementById('contractor-other');
+  otherDiv.style.display = value === 'Other' ? 'block' : 'none';
+  if (value !== 'Other') {
+    document.getElementById('contractor_other_text').value = '';
+  }
+}
+
+function handleEndClientChange(value) {
+  const otherDiv = document.getElementById('endclient-other');
+  otherDiv.style.display = value === 'Other' ? 'block' : 'none';
+  if (value !== 'Other') {
+    document.getElementById('endclient_other_text').value = '';
+  }
+}
+
+// ============================================
+// TANK MANAGEMENT (REUSED FROM PROSPECT)
+// ============================================
+function addTank() {
+  const tankList = document.getElementById('tank-list');
+  const newTank = document.createElement('div');
+  newTank.className = 'tank-item';
+  newTank.innerHTML = `
+    <select name="tank_type[]" class="form-select" required>
+      <option value="">Tank Type</option>
+      <option value="Zincallum">Zincallum</option>
+      <option value="SecureStore">SecureStore</option>
+      <option value="FM Approved">FM Approved</option>
+      <option value="GFS Tank">GFS Tank</option>
+    </select>
+    <input
+      type="text"
+      name="tank_capacity[]"
+      class="form-input"
+      placeholder="Capacity (e.g., 1000 KL)"
+      required
+    />
+    <input
+      type="number"
+      name="tank_quantity[]"
+      class="form-input"
+      placeholder="Quantity"
+      min="1"
+      required
+    />
+    <button
+      type="button"
+      class="remove-btn"
+      onclick="removeTank(this)"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+  `;
+  tankList.appendChild(newTank);
+  updateRemoveButtons();
+}
+
+function removeTank(button) {
+  button.closest('.tank-item').remove();
+  updateRemoveButtons();
+}
+
+function updateRemoveButtons() {
+  const tanks = document.querySelectorAll('.tank-item');
+  tanks.forEach((tank, index) => {
+    const removeBtn = tank.querySelector('.remove-btn');
+    removeBtn.style.display = tanks.length > 1 ? 'flex' : 'none';
+  });
+}
+
+// ============================================
+// FORM VALIDATION
+// ============================================
+document.getElementById('conversionForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const errorDiv = document.getElementById('conversionError');
+  errorDiv.classList.remove('show');
+  
+  // Validate client type
+  const clientType = document.getElementById('client_type_main').value;
+  if (!clientType) {
+    showError('Please select a client type');
+    return;
+  }
+  
+  // Validate conditional fields
+  if (clientType === 'CONSULTANT') {
+    const consultantType = document.getElementById('consultant_type').value;
+    if (!consultantType) {
+      showError('Please select a consultant type');
+      return;
+    }
+    if (consultantType === 'Other' && !document.getElementById('consultant_other_text').value.trim()) {
+      showError('Please specify the consultant type');
+      return;
+    }
+  } else if (clientType === 'CONTRACTOR') {
+    const contractorType = document.getElementById('contractor_type').value;
+    if (!contractorType) {
+      showError('Please select a contractor type');
+      return;
+    }
+    if (contractorType === 'Other' && !document.getElementById('contractor_other_text').value.trim()) {
+      showError('Please specify the contractor type');
+      return;
+    }
+  } else if (clientType === 'END_CLIENT') {
+    const endclientCategory = document.getElementById('endclient_category').value;
+    if (!endclientCategory) {
+      showError('Please select an end client category');
+      return;
+    }
+    if (endclientCategory === 'Other' && !document.getElementById('endclient_other_text').value.trim()) {
+      showError('Please specify the end client category');
+      return;
+    }
+  }
+  
+  // Validate tank application
+  if (!document.getElementById('tank_application').value.trim()) {
+    showError('Please enter tank application');
+    return;
+  }
+  
+  // Validate tank details
+  const tankTypes = document.querySelectorAll('select[name="tank_type[]"]');
+  const tankCapacities = document.querySelectorAll('input[name="tank_capacity[]"]');
+  const tankQuantities = document.querySelectorAll('input[name="tank_quantity[]"]');
+  
+  let validTank = false;
+  for (let i = 0; i < tankTypes.length; i++) {
+    if (tankTypes[i].value && tankCapacities[i].value && tankQuantities[i].value) {
+      validTank = true;
+      break;
+    }
+  }
+  
+  if (!validTank) {
+    showError('Please add at least one complete tank detail');
+    return;
+  }
+  
+  // Validate sales person
+  if (!document.getElementById('assigned_sales_person').value) {
+    showError('Please select an assigned sales person');
+    return;
+  }
+  
+  // Validate remark
+  if (!document.getElementById('remark').value.trim()) {
+    showError('Please provide a remark');
+    return;
+  }
+  
+  // If all validation passes, submit the form
+  document.getElementById('submitConversionBtn').disabled = true;
+  document.getElementById('submitConversionBtn').textContent = 'Converting...';
+  this.submit();
+});
+
+function showError(message) {
+  const errorDiv = document.getElementById('conversionError');
+  errorDiv.textContent = message;
+  errorDiv.classList.add('show');
+  errorDiv.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Initialize
+updateRemoveButtons();
+</script>
+
+{% endblock %}

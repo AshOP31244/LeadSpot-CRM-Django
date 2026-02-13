@@ -1,0 +1,379 @@
+{% extends "leads/base.html" %}
+{% load static %}
+
+{% block title %}LeadSpot{% endblock %}
+
+{% block content %}
+
+<style>
+  /* Override base styles with reference UI */
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+  }
+
+  .top-bar {
+    background: white;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0 32px;
+    height: 64px;
+    box-shadow: none;
+  }
+
+  .navbar {
+    background: white;
+    border-bottom: 1px solid #e5e5e5;
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .navbar-brand {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    letter-spacing: -0.5px;
+  }
+
+  .navbar-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid #e5e5e5;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #1a1a1a;
+    text-decoration: none;
+  }
+
+  .nav-icon:hover {
+    border-color: #1a1a1a;
+    background: #fafafa;
+  }
+
+  .container {
+    margin-top: 64px;
+    padding: 32px;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .page-header {
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: bolder;
+    margin-bottom: 24px;
+    letter-spacing: -0.5px;
+    color: #1a1a1a;
+  }
+
+  .header-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border: 1px solid #e5e5e5;
+    background: white;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: #1a1a1a;
+    text-decoration: none;
+  }
+
+  .btn:hover {
+    border-color: #1a1a1a;
+    background: #fafafa;
+  }
+
+  .btn-primary {
+    background: #1a1a1a;
+    color: white;
+    border-color: #1a1a1a;
+  }
+
+  .btn-primary:hover {
+    background: #333;
+    border-color: #333;
+  }
+
+  .table-container {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead {
+    background: #fafafa;
+    border-bottom: 1px solid #e5e5e5;
+  }
+
+  th {
+    padding: 16px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #666;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  tbody tr:hover {
+    background: #fafafa;
+  }
+
+  tbody tr:last-child {
+    border-bottom: none;
+  }
+
+  td {
+    padding: 20px 16px;
+    font-size: 14px;
+    color: #1a1a1a;
+  }
+
+  .lead-id {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #666;
+  }
+
+  .company-name {
+    font-weight: 600;
+    color: #1a1a1a;
+  }
+
+  .stage-badge {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+    text-transform: capitalize;
+  }
+
+  .stage-prospect { 
+    background: #f3f4f6; 
+    color: #374151; 
+  }
+  
+  .stage-live { 
+    background: #dcfce7; 
+    color: #166534; 
+  }
+  
+  .stage-future { 
+    background: #dbeafe; 
+    color: #1e40af; 
+  }
+  
+  .stage-reconnect { 
+    background: #fef3c7; 
+    color: #92400e; 
+  }
+  
+  .stage-regret { 
+    background: #fee2e2; 
+    color: #991b1b; 
+  }
+
+  .date-text {
+    color: #666;
+    font-size: 13px;
+  }
+
+  .checkbox-cell {
+    width: 48px;
+  }
+
+  input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    border: 1px solid #e5e5e5;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 768px) {
+    .container {
+      padding: 16px;
+      margin-top: 64px;
+    }
+
+    .navbar {
+      padding: 0 16px;
+    }
+
+    .page-title {
+      font-size: 24px;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      min-width: 1000px;
+    }
+  }
+</style>
+
+<nav class="navbar">
+  <div class="navbar-brand">Lead Spot</div>
+  <div class="navbar-actions">
+    <div class="nav-icon" title="Filter">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18M7 12h10m-7 6h4"></path>
+      </svg>
+    </div>
+    <div class="nav-icon" title="Sort">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 6h18M3 12h12M3 18h6"></path>
+      </svg>
+    </div>
+    <div class="nav-icon" title="Export">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"></path>
+      </svg>
+    </div>
+    <a href="{% url 'logout' %}" class="nav-icon" title="Logout">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+      </svg>
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <div class="page-header">
+    <h1 class="page-title">Prospect Stage</h1>
+    <!-- <div class="header-actions">
+      {% if request.user.profile.role == 'marketing' %}
+        <a href="{% url 'add_lead' %}" class="btn btn-primary">
+           + Add Lead
+        </a>
+
+        <button class="btn">Import Leads</button>
+      {% endif %}
+      <button class="btn">Filter</button>
+      <button class="btn">Sort by ▼</button>
+      <button class="btn">Export</button>
+    </div> -->
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th class="checkbox-cell">
+            <input type="checkbox" id="select-all">
+          </th>
+           <th>LEAD ID</th>
+          <th>COMPANY</th>
+          <th>CITY</th>
+          <th>STAGE</th>
+          <th>LAST UPDATE</th>  
+          <th>REMARK</th>        
+          <th>CREATED</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for lead in leads %}
+        <tr onclick="window.location.href='{% url 'lead_detail' lead.id %}'">
+          <td class="checkbox-cell">
+            <input type="checkbox" onclick="event.stopPropagation()">
+          </td>
+          <td><span class="lead-id">{{ lead.lead_code }}</span></td>
+          <td><div class="company-name">{{ lead.company_name }}</div></td>
+          <td>{{ lead.city }}, {{ lead.state }}</td>
+          <td>
+            <span class="stage-badge stage-{{ lead.stage }}">
+              {{ lead.get_stage_display }}
+            </span>
+          </td>
+          <!-- ✅ NEW: Last Update Column -->
+          <td>
+            {% if lead.last_call_date %}
+              <span class="date-text">{{ lead.last_call_date|date:"d M, Y" }}</span>
+            {% else %}
+              <span class="date-text" style="color: #999;">Never called</span>
+            {% endif %}
+          </td>
+          <!-- ✅ NEW: Remark Column -->
+          <td>
+            {% if lead.last_remark %}
+              <div style="max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #666;">
+                {{ lead.last_remark|truncatewords:8 }}
+              </div>
+            {% else %}
+              <span style="color: #999; font-size: 13px;">No remark</span>
+            {% endif %}
+          </td>
+          <td><span class="date-text">{{ lead.created_at|date:"d M, Y" }}</span></td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="8" style="text-align:center; padding:60px; color:#666;">
+            No leads available yet
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  // Select all checkbox functionality
+  document.getElementById('select-all').addEventListener('change', function() {
+    const checkboxes = document.querySelectorAll('tbody input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+      checkbox.checked = this.checked;
+    });
+  });
+</script>
+
+{% endblock %}

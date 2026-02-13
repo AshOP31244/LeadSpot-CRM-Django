@@ -1,0 +1,2912 @@
+{% extends 'leads/base.html' %} {% load static %} {% block title %}{{
+lead.company_name }} - Lead Detail{% endblock %} {% block content %}
+
+<style>
+  :root {
+    --primary: #1a1a1a;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e5e5e5;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --text-muted: #999;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+    --error: #ef4444;
+    --teal: #14b8a6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+      sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* Navbar */
+  .navbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .navbar-brand {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .navbar-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .nav-icon:hover {
+    border-color: var(--primary);
+    background: var(--bg);
+  }
+
+  .container {
+    margin-top: 64px;
+    padding: 32px;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Header Section */
+  .lead-header {
+    background: linear-gradient(135deg, var(--primary) 0%, #333 100%);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lead-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(
+      circle,
+      rgba(255, 255, 255, 0.1) 0%,
+      transparent 70%
+    );
+    border-radius: 50%;
+    transform: translate(50%, -50%);
+  }
+
+  .header-content {
+    position: relative;
+    z-index: 1;
+  }
+
+  .lead-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+
+  .lead-title {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
+  }
+
+  .stage-badge {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .stage-prospect {
+    background: #f3f4f6;
+    color: #374151;
+  }
+  .stage-live {
+    background: #dcfce7;
+    color: #166534;
+  }
+  .stage-future {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+  .stage-reconnect {
+    background: #fef3c7;
+    color: #92400e;
+  }
+  .stage-regret {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  .lead-meta {
+    display: flex;
+    gap: 32px;
+    flex-wrap: wrap;
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    opacity: 0.95;
+  }
+
+  .meta-item svg {
+    opacity: 0.7;
+  }
+
+  .lead-id {
+    font-family: "Courier New", monospace;
+    font-size: 13px;
+    background: rgba(255, 255, 255, 0.15);
+    padding: 4px 8px;
+    border-radius: 4px;
+  }
+
+  /* Editable Info Section */
+  /* Client Information Section */
+  .info-section {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-title-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--bg) 0%, #f0f0f0 100%);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text);
+  }
+
+  .section-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .edit-btn,
+  .save-btn,
+  .cancel-btn {
+    padding: 9px 18px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text);
+  }
+
+  .edit-btn:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    transform: translateY(-1px);
+  }
+
+  .save-btn {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+  }
+
+  .save-btn:hover {
+    background: #15803d;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  }
+
+  .cancel-btn {
+    background: transparent;
+    color: var(--text-secondary);
+    border-color: var(--border);
+  }
+
+  .cancel-btn:hover {
+    background: var(--error);
+    color: white;
+    border-color: var(--error);
+  }
+
+  /* Client Name Section */
+  .client-name-section {
+    margin-bottom: 24px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .info-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .info-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .info-value.editable {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    transition: all 0.2s;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 500;
+  }
+
+  .info-value.editable:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+  }
+
+  /* Contact Section */
+  .contact-section {
+    margin-bottom: 20px;
+  }
+
+  .contact-section:last-of-type {
+    margin-bottom: 0;
+  }
+
+  .contact-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .contact-section-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .contact-section-title svg {
+    opacity: 0.7;
+  }
+
+  .add-contact-btn {
+    padding: 6px 12px;
+    border: 1px dashed var(--border);
+    background: transparent;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-secondary);
+  }
+
+  .add-contact-btn:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    border-style: solid;
+    color: var(--primary);
+  }
+
+  /* Contact List */
+  .contact-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .contact-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    transition: all 0.2s;
+  }
+
+  .contact-item:hover {
+    border-color: #ccc;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  .contact-item-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .contact-icon {
+    width: 36px;
+    height: 36px;
+    background: var(--card-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .contact-icon.phone-icon {
+    color: var(--info);
+  }
+
+  .contact-icon.email-icon {
+    color: var(--teal);
+  }
+
+  .contact-details {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .contact-display {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .contact-value {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text);
+    word-break: break-word;
+  }
+
+  .primary-badge {
+    padding: 3px 10px;
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .contact-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--card-bg);
+    font-size: 14px;
+    color: var(--text);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  .contact-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+  }
+
+  /* Contact Actions */
+  .contact-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 12px;
+  }
+
+  .action-btn {
+    padding: 6px;
+    border: none;
+    background: transparent;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .delete-btn {
+    color: var(--error);
+  }
+
+  .delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+  }
+
+  /* Client Actions */
+  .client-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .contact-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
+
+    .contact-actions {
+      margin-left: 0;
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .client-actions {
+      flex-direction: column;
+    }
+
+    .save-btn,
+    .cancel-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  /* Form Card */
+  .form-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 32px;
+    margin-bottom: 24px;
+  }
+
+  .form-section-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 24px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 24px;
+  }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  input[type="date"],
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 14px;
+    background: var(--card-bg);
+    color: var(--text);
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+  }
+
+  textarea {
+    min-height: 100px;
+    resize: vertical;
+  }
+
+  /* Outcome Buttons */
+  .outcome-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .outcome-btn {
+    padding: 16px 20px;
+    border: 2px solid;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: var(--card-bg);
+  }
+
+  .outcome-btn.success {
+    border-color: var(--success);
+    color: var(--success);
+  }
+
+  .outcome-btn.success:hover,
+  .outcome-btn.success.selected {
+    background: var(--success);
+    color: white;
+  }
+
+  .outcome-btn.info {
+    border-color: var(--info);
+    color: var(--info);
+  }
+
+  .outcome-btn.info:hover,
+  .outcome-btn.info.selected {
+    background: var(--info);
+    color: white;
+  }
+
+  .outcome-btn.warning {
+    border-color: var(--warning);
+    color: var(--warning);
+  }
+
+  .outcome-btn.warning:hover,
+  .outcome-btn.warning.selected {
+    background: var(--warning);
+    color: white;
+  }
+
+  .outcome-btn.error {
+    border-color: var(--error);
+    color: var(--error);
+  }
+
+  .outcome-btn.error:hover,
+  .outcome-btn.error.selected {
+    background: var(--error);
+    color: white;
+  }
+
+  .outcome-btn.selected {
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* Dynamic Containers */
+  .outcome-container {
+    display: none;
+    background: var(--bg);
+    border: 2px solid;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+    animation: slideDown 0.3s ease-out;
+  }
+
+  .outcome-container.show {
+    display: block;
+  }
+
+  .container-yes {
+    border-color: var(--success);
+  }
+  .container-no {
+    border-color: var(--error);
+  }
+  .container-reconnect {
+    border-color: var(--warning);
+  }
+  .container-future {
+    border-color: var(--info);
+  }
+
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .container-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Tank List */
+  .tank-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .tank-item {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr auto;
+    gap: 12px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    align-items: center;
+  }
+
+  .tank-item select,
+  .tank-item input {
+    margin: 0;
+  }
+
+  .remove-btn {
+    padding: 8px;
+    background: var(--error);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .remove-btn:hover {
+    background: #dc2626;
+  }
+
+  /* Submit Button */
+  .form-actions {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+  }
+
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: #333;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-secondary);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+    color: var(--text);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      padding: 16px;
+    }
+
+    .lead-header {
+      padding: 24px;
+    }
+
+    .lead-title {
+      font-size: 24px;
+    }
+
+    .form-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .outcome-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tank-item {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Toast Notification System */
+  #toast-container {
+    position: fixed;
+    top: 80px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    max-width: 400px;
+  }
+
+  .toast {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 16px 20px;
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-left: 4px solid;
+    animation: slideInRight 0.3s ease-out;
+    min-width: 320px;
+    max-width: 400px;
+  }
+
+  .toast.success {
+    border-left-color: var(--success);
+  }
+
+  .toast.error {
+    border-left-color: var(--error);
+  }
+
+  .toast.warning {
+    border-left-color: var(--warning);
+  }
+
+  .toast.info {
+    border-left-color: var(--info);
+  }
+
+  .toast-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+  }
+
+  .toast.success .toast-icon {
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--success);
+  }
+
+  .toast.error .toast-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: var(--error);
+  }
+
+  .toast.warning .toast-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: var(--warning);
+  }
+
+  .toast.info .toast-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: var(--info);
+  }
+
+  .toast-content {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .toast-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .toast-message {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  .toast-close {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: all 0.2s;
+    border-radius: 4px;
+  }
+
+  .toast-close:hover {
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .toast-progress {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: currentColor;
+    border-radius: 0 0 0 12px;
+    animation: progressBar 3s linear;
+  }
+
+  .toast.success .toast-progress {
+    color: var(--success);
+  }
+
+  .toast.error .toast-progress {
+    color: var(--error);
+  }
+
+  .toast.warning .toast-progress {
+    color: var(--warning);
+  }
+
+  .toast.info .toast-progress {
+    color: var(--info);
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slideOutRight {
+    from {
+      opacity: 1;
+      transform: translateX(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes progressBar {
+    from {
+      width: 100%;
+    }
+    to {
+      width: 0%;
+    }
+  }
+
+  .toast.removing {
+    animation: slideOutRight 0.3s ease-out forwards;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    #toast-container {
+      top: 70px;
+      right: 12px;
+      left: 12px;
+      max-width: none;
+    }
+
+    .toast {
+      min-width: auto;
+      max-width: none;
+    }
+  }
+
+  /* Additional styles for nested dropdowns */
+  .form-group.full-width {
+    grid-column: 1 / -1;
+  }
+
+  /* Highlight required fields */
+  .required::after {
+    content: " *";
+    color: var(--error);
+  }
+
+  /* Tank item responsive */
+  .tank-item {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr auto;
+    gap: 12px;
+    padding: 16px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    align-items: center;
+  }
+
+  @media (max-width: 768px) {
+    .tank-item {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Add Tank Button */
+  .add-btn {
+    padding: 10px 20px;
+    border: 2px dashed var(--border);
+    background: transparent;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-secondary);
+    margin-top: 8px;
+  }
+
+  .add-btn:hover {
+    background: var(--success);
+    color: white;
+    border-color: var(--success);
+    border-style: solid;
+    transform: translateY(-1px);
+  }
+
+  /* ========================================
+     CALL HISTORY / TIMELINE STYLES
+     ======================================== */
+  
+  .info-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 28px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .card-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 12px;
+    bottom: 12px;
+    width: 2px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 24px;
+    padding-left: 24px;
+  }
+
+  .timeline-item:last-child {
+    margin-bottom: 0;
+  }
+
+  .timeline-dot {
+    position: absolute;
+    left: -26px;
+    top: 4px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--card-bg);
+    border: 2px solid var(--warning);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+  }
+
+  .timeline-dot.success {
+    border-color: var(--success);
+  }
+
+  .timeline-dot svg {
+    display: none;
+  }
+
+  .timeline-content {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    transition: all 0.2s;
+  }
+
+  .timeline-content:hover {
+    border-color: var(--warning);
+    box-shadow: 0 2px 8px rgba(245, 158, 11, 0.1);
+  }
+
+  .timeline-content.success:hover {
+    border-color: var(--success);
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+  }
+
+  .timeline-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .stage-text {
+    color: var(--text);
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .timeline-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+
+  .timeline-text {
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .timeline-text strong {
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  /* Empty state */
+  .timeline-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-secondary);
+  }
+
+  .timeline-empty svg {
+    opacity: 0.3;
+    margin-bottom: 16px;
+  }
+
+  .timeline-empty-title {
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  .timeline-empty-text {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+
+  /* ============================================
+     FLATPICKR CUSTOM THEME - PROFESSIONAL LIGHT BLUE
+     ============================================ */
+  .flatpickr-calendar {
+    background: #ffffff;
+    border: 1.5px solid #e0f2fe;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow: hidden;
+  }
+
+  .flatpickr-months {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    padding: 20px;
+  }
+
+  .flatpickr-month {
+    color: white;
+    height: auto;
+  }
+
+  .flatpickr-current-month {
+    font-size: 17px;
+    font-weight: 600;
+    color: white;
+    padding: 0;
+  }
+
+  .flatpickr-current-month .flatpickr-monthDropdown-months {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 6px 12px;
+    color: white;
+    font-weight: 600;
+    border: none;
+    appearance: none;
+    cursor: pointer;
+  }
+
+  .flatpickr-current-month .flatpickr-monthDropdown-months:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+
+  .flatpickr-current-month .numInputWrapper {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 2px 8px;
+  }
+
+  .flatpickr-current-month .numInputWrapper input {
+    color: white;
+    font-weight: 600;
+  }
+
+  .flatpickr-prev-month,
+  .flatpickr-next-month {
+    fill: white;
+    opacity: 0.8;
+    transition: all 0.2s;
+    padding: 8px;
+    border-radius: 8px;
+  }
+
+  .flatpickr-prev-month:hover,
+  .flatpickr-next-month:hover {
+    background: rgba(255, 255, 255, 0.2);
+    opacity: 1;
+  }
+
+  .flatpickr-weekdays {
+    background: #f0f9ff;
+    padding: 16px 0 8px 0;
+  }
+
+  .flatpickr-weekday {
+    color: #3b82f6;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .flatpickr-days {
+    padding: 8px;
+    background: #ffffff;
+  }
+
+  .flatpickr-day {
+    border-radius: 10px;
+    color: #1a1a1a;
+    font-weight: 500;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    margin: 2px;
+  }
+
+  .flatpickr-day:hover {
+    background: #dbeafe;
+    border-color: #93c5fd;
+    color: #1e40af;
+    transform: scale(1.05);
+  }
+
+  .flatpickr-day.today {
+    background: linear-gradient(135deg, #bfdbfe 0%, #93c5fd 100%);
+    border-color: #3b82f6;
+    color: #1e40af;
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+  }
+
+  .flatpickr-day.today:hover {
+    background: linear-gradient(135deg, #93c5fd 0%, #60a5fa 100%);
+    color: #1e3a8a;
+  }
+
+  .flatpickr-day.selected {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    border-color: #1e40af;
+    color: white;
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
+
+  .flatpickr-day.selected:hover {
+    background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
+    transform: scale(1.08);
+  }
+
+  .flatpickr-day.prevMonthDay,
+  .flatpickr-day.nextMonthDay {
+    color: #cbd5e1;
+  }
+
+  .flatpickr-day.disabled,
+  .flatpickr-day.disabled:hover {
+    color: #cbd5e1;
+    background: transparent;
+    border-color: transparent;
+    cursor: not-allowed;
+  }
+
+  /* Time Picker Styling */
+  .flatpickr-time {
+    background: #f0f9ff;
+    border-top: 1px solid #bfdbfe;
+    border-radius: 0 0 16px 16px;
+    padding: 16px;
+  }
+
+  .flatpickr-time input {
+    color: #1e40af;
+    font-weight: 700;
+    font-size: 16px;
+    background: white;
+    border: 2px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 8px;
+  }
+
+  .flatpickr-time input:hover {
+    border-color: #60a5fa;
+    background: #f0f9ff;
+  }
+
+  .flatpickr-time input:focus {
+    border-color: #3b82f6;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  }
+
+  .flatpickr-time .flatpickr-time-separator,
+  .flatpickr-time .flatpickr-am-pm {
+    color: #3b82f6;
+    font-weight: 700;
+  }
+
+  .flatpickr-am-pm {
+    background: white;
+    border: 2px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 8px 12px;
+    color: #1e40af;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .flatpickr-am-pm:hover {
+    background: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+  }
+
+  /* ============================================
+     CRITICAL FIX: Input field styling
+     ============================================ */
+
+  /* Remove conflicting background image that was breaking the input */
+  input[type="date"],
+  input[type="datetime-local"] {
+    /* REMOVED: background-image, background-repeat, background-position */
+    /* REMOVED: padding-right that was causing layout issues */
+    cursor: pointer;
+    transition: all 0.2s;
+    background-image: none; /* Explicitly remove */
+    padding-right: 12px; /* Reset to default */
+  }
+
+  /* Only show icon when flatpickr is active */
+  input[type="date"].flatpickr-input,
+  input[type="datetime-local"].flatpickr-input {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%233b82f6' stroke-width='2'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: calc(100% - 14px) center;
+    padding-right: 45px;
+  }
+
+  input[type="date"]:hover,
+  input[type="datetime-local"]:hover {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.05);
+  }
+
+  input[type="date"]:focus,
+  input[type="datetime-local"]:focus {
+    border-color: #1a1a1a;
+    box-shadow: 0 0 0 3px rgba(26, 26, 26, 0.05);
+  }
+
+  input[type="date"].flatpickr-input:focus,
+  input[type="datetime-local"].flatpickr-input:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%232563eb' stroke-width='2.5'%3E%3Crect x='3' y='4' width='18' height='18' rx='2' ry='2'%3E%3C/rect%3E%3Cline x1='16' y1='2' x2='16' y2='6'%3E%3C/line%3E%3Cline x1='8' y1='2' x2='8' y2='6'%3E%3C/line%3E%3Cline x1='3' y1='10' x2='21' y2='10'%3E%3C/line%3E%3C/svg%3E");
+  }
+
+  /* Animation for calendar appearance */
+  @keyframes flatpickrFadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px) scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  .flatpickr-calendar.open {
+    animation: flatpickrFadeIn 0.2s ease-out;
+  }
+
+  /* Week numbers styling (if enabled) */
+  .flatpickr-weekwrapper .flatpickr-weeks {
+    box-shadow: none;
+  }
+
+  .flatpickr-weekwrapper .flatpickr-weekday {
+    background: #f0f9ff;
+    color: #3b82f6;
+  }
+
+  .flatpickr-weekwrapper span.flatpickr-day {
+    color: #3b82f6;
+    font-weight: 600;
+  }
+
+</style>
+
+<nav class="navbar">
+  <div class="navbar-brand">Lead Spot</div>
+  <div class="navbar-actions">
+    <a href="{% url 'lead_list' %}" class="nav-icon" title="Back to Leads">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M19 12H5M12 19l-7-7 7-7"></path>
+      </svg>
+    </a>
+    <div class="nav-icon" title="Export">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"
+        ></path>
+      </svg>
+    </div>
+    <a href="{% url 'logout' %}" class="nav-icon" title="Logout">
+      <svg
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path
+          d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+        ></path>
+      </svg>
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Lead Header -->
+  <div class="lead-header">
+    <div class="header-content">
+      <div class="lead-title-row">
+        <div>
+          <h1 class="lead-title">{{ lead.company_name }}</h1>
+          <span class="lead-id">{{ lead.lead_code }}</span>
+        </div>
+        <span class="stage-badge stage-{{ lead.stage }}"
+          >{{ lead.get_stage_display }}</span
+        >
+      </div>
+      <div class="lead-meta">
+        <div class="meta-item">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+            <circle cx="12" cy="10" r="3"></circle>
+          </svg>
+          {{ lead.city }}, {{ lead.state }}
+        </div>
+        <div class="meta-item">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+          </svg>
+          {{ lead.sector|default:"Not specified" }}
+        </div>
+        <div class="meta-item">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+          Source: {{ lead.source }}
+        </div>
+        <div class="meta-item">
+          <svg
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          {{ lead.created_at|date:"d M, Y" }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Client Contact Information -->
+  <div class="info-section">
+    <div class="section-header">
+      <div class="section-title-group">
+        <div class="section-icon">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <h3 class="section-title">Client Contact Information</h3>
+      </div>
+      <button
+        class="edit-btn"
+        onclick="toggleClientEdit()"
+        id="client-edit-btn"
+      >
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 20h9"></path>
+          <path
+            d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+          ></path>
+        </svg>
+        Edit
+      </button>
+    </div>
+
+    <!-- Client Name (Always Editable) -->
+    <div class="client-name-section">
+      <div class="info-label">Contact Person Name</div>
+      <div class="info-value" id="client-name-display">
+        {{ lead.contact_name|default:"Not specified" }}
+      </div>
+      <input
+        type="text"
+        class="info-value editable"
+        id="client-name-input"
+        value="{{ lead.contact_name }}"
+        style="display: none"
+      />
+    </div>
+
+    <!-- Phone Numbers Section -->
+    <div class="contact-section">
+      <div class="contact-section-header">
+        <div class="contact-section-title">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+            ></path>
+          </svg>
+          Phone Numbers
+        </div>
+        <button
+          class="add-contact-btn"
+          onclick="addClientContact('phone')"
+          style="display: none"
+          id="add-phone-btn"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add
+        </button>
+      </div>
+      <div class="contact-list" id="client-phone-list">
+        <div class="contact-item" data-type="phone" data-primary="true">
+          <div class="contact-item-content">
+            <div class="contact-icon phone-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+                ></path>
+              </svg>
+            </div>
+            <div class="contact-details">
+              <div class="contact-display">
+                <span class="contact-value"
+                  >{{ lead.contact_phone|default:"Not available" }}</span
+                >
+                <span class="primary-badge">Primary</span>
+              </div>
+              <input
+                type="tel"
+                class="contact-input"
+                value="{{ lead.contact_phone }}"
+                placeholder="+91 XXXXXXXXXX"
+                style="display: none"
+              />
+            </div>
+          </div>
+          <div class="contact-actions" style="display: none">
+            <button
+              class="action-btn delete-btn"
+              onclick="removeClientContact(this)"
+              title="Remove"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email Addresses Section -->
+    <div class="contact-section">
+      <div class="contact-section-header">
+        <div class="contact-section-title">
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <path
+              d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+            ></path>
+            <polyline points="22,6 12,13 2,6"></polyline>
+          </svg>
+          Email Addresses
+        </div>
+        <button
+          class="add-contact-btn"
+          onclick="addClientContact('email')"
+          style="display: none"
+          id="add-email-btn"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Add
+        </button>
+      </div>
+      <div class="contact-list" id="client-email-list">
+        <div class="contact-item" data-type="email" data-primary="true">
+          <div class="contact-item-content">
+            <div class="contact-icon email-icon">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+                ></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+            </div>
+            <div class="contact-details">
+              <div class="contact-display">
+                <span class="contact-value"
+                  >{{ lead.contact_email|default:"Not available" }}</span
+                >
+                <span class="primary-badge">Primary</span>
+              </div>
+              <input
+                type="email"
+                class="contact-input"
+                value="{{ lead.contact_email }}"
+                placeholder="email@example.com"
+                style="display: none"
+              />
+            </div>
+          </div>
+          <div class="contact-actions" style="display: none">
+            <button
+              class="action-btn delete-btn"
+              onclick="removeClientContact(this)"
+              title="Remove"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Save/Cancel Buttons (Hidden by default) -->
+    <div class="client-actions" id="client-actions" style="display: none">
+      <button class="save-btn" onclick="saveClientInfo()">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path
+            d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+          ></path>
+        </svg>
+        Save Changes
+      </button>
+      <button class="cancel-btn" onclick="cancelClientEdit()">
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+        Cancel
+      </button>
+    </div>
+  </div>
+
+  <!-- Marketing Call Form -->
+  <div class="form-card">
+    <form method="POST" id="marketingForm">
+      {% csrf_token %}
+
+      <h3 class="form-section-title">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M12 20h9"></path>
+          <path
+            d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+          ></path>
+        </svg>
+        Marketing Call
+      </h3>
+
+      <!-- Call Timing -->
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="expected_call_date">Expected Call Date</label>
+          <input
+            type="date"
+            id="expected_call_date"
+            name="expected_call_date"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="actual_call_date" class="required"
+            >Actual Call Date</label
+          >
+          <input
+            type="date"
+            id="actual_call_date"
+            name="actual_call_date"
+            data-was-required="true"
+            value="{% now 'Y-m-d' %}"
+          />
+        </div>
+      </div>
+
+      <!-- Outcome Selection -->
+      <div class="form-group full-width" style="margin-bottom: 20px">
+        <label class="required">Outcome</label>
+        <input type="hidden" name="outcome" id="outcomeField" />
+        <div class="outcome-grid">
+          <button
+            type="button"
+            class="outcome-btn success"
+            onclick="selectOutcome('yes', this)"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <path d="M22 4L12 14.01l-3-3"></path>
+            </svg>
+            Requirement Yes
+          </button>
+
+          <button
+            type="button"
+            class="outcome-btn info"
+            onclick="selectOutcome('future', this)"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+            Future Requirement
+          </button>
+
+          <button
+            type="button"
+            class="outcome-btn warning"
+            onclick="selectOutcome('reconnect', this)"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M3 11l18-5v12L3 14v-3z"></path>
+              <path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"></path>
+            </svg>
+            Reconnect
+          </button>
+
+          <button
+            type="button"
+            class="outcome-btn error"
+            onclick="selectOutcome('regret', this)"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M15 9l-6 6M9 9l6 6"></path>
+            </svg>
+            Regret Offer
+          </button>
+        </div>
+      </div>
+
+      <!-- Requirement Yes Container -->
+      <div id="container-yes" class="outcome-container container-yes">
+        <div class="container-title">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="color: var(--success)"
+          >
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <path d="M22 4L12 14.01l-3-3"></path>
+          </svg>
+          Requirement Details
+        </div>
+
+        <!-- Type of Client -->
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="client_type_main" class="required"
+              >Type of Client</label
+            >
+            <select
+              id="client_type_main"
+              name="client_type_main"
+              data-was-required="true"
+              onchange="handleClientTypeChange(this.value)"
+            >
+              <option value="">-- Select Client Type --</option>
+              <option value="EPC">EPC</option>
+              <option value="CONSULTANT">Consultant</option>
+              <option value="CONTRACTOR">Contractor</option>
+              <option value="END_CLIENT">End Client</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Consultant Sub-options -->
+        <div id="consultant-options" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="consultant_type" class="required"
+              >Consultant Type</label
+            >
+            <select
+              id="consultant_type"
+              name="consultant_type"
+              onchange="handleConsultantChange(this.value)"
+            >
+              <option value="">-- Select Consultant Type --</option>
+              <option value="Engineering Consultant">
+                Engineering Consultant
+              </option>
+              <option value="Design Engineering Consultant">
+                Design Engineering Consultant
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="consultant-other" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="consultant_other_text" class="required"
+              >Specify Consultant Type</label
+            >
+            <input
+              type="text"
+              id="consultant_other_text"
+              name="consultant_other_text"
+              placeholder="Enter consultant type"
+            />
+          </div>
+        </div>
+
+        <!-- Contractor Sub-options -->
+        <div id="contractor-options" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="contractor_type" class="required"
+              >Contractor Type</label
+            >
+            <select
+              id="contractor_type"
+              name="contractor_type"
+              onchange="handleContractorChange(this.value)"
+            >
+              <option value="">-- Select Contractor Type --</option>
+              <option value="Fire Contractor">Fire Contractor</option>
+              <option value="Government Contractor">
+                Government Contractor
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="contractor-other" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="contractor_other_text" class="required"
+              >Specify Contractor Type</label
+            >
+            <input
+              type="text"
+              id="contractor_other_text"
+              name="contractor_other_text"
+              placeholder="Enter contractor type"
+            />
+          </div>
+        </div>
+
+        <!-- End Client Sub-options -->
+        <div id="endclient-options" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="endclient_category" class="required"
+              >End Client Category</label
+            >
+            <select
+              id="endclient_category"
+              name="endclient_category"
+              onchange="handleEndClientChange(this.value)"
+            >
+              <option value="">-- Select Category --</option>
+              <option value="General Manufacturing Company">
+                General Manufacturing Company
+              </option>
+              <option value="Infrastructure and Real Estate">
+                Infrastructure and Real Estate
+              </option>
+              <option value="Chemical and Pharma">Chemical and Pharma</option>
+              <option value="Food, Beverage and Breweries">
+                Food, Beverage and Breweries
+              </option>
+              <option value="Logistics and Warehousing">
+                Logistics and Warehousing
+              </option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Tourism and Hospitality">
+                Tourism and Hospitality
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="endclient-other" class="form-grid" style="display: none">
+          <div class="form-group full-width">
+            <label for="endclient_other_text" class="required"
+              >Specify End Client Category</label
+            >
+            <input
+              type="text"
+              id="endclient_other_text"
+              name="endclient_other_text"
+              placeholder="Enter end client category"
+            />
+          </div>
+        </div>
+
+        <!-- Tank Application -->
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="tank_application" class="required"
+              >Tank Application</label
+            >
+            <input
+              type="text"
+              id="tank_application"
+              name="tank_application"
+              placeholder="e.g., Water Storage, Chemical Storage, Fire Fighting"
+              data-was-required="true"
+            />
+          </div>
+        </div>
+
+        <!-- Tank Details -->
+        <div class="form-group full-width">
+          <label style="margin-bottom: 12px" class="required"
+            >Tank Details</label
+          >
+          <div class="tank-list" id="tank-list">
+            <div class="tank-item">
+              <select name="tank_type[]" data-was-required="true">
+                <option value="">Tank Type</option>
+                <option value="Zincallum">Zincallum</option>
+                <option value="SecureStore">SecureStore</option>
+                <option value="FM Approved">FM Approved</option>
+                <option value="GFS Tank">GFS Tank</option>
+              </select>
+              <input
+                type="text"
+                name="tank_capacity[]"
+                placeholder="Capacity (e.g., 1000 KL)"
+                data-was-required="true"
+              />
+              <input
+                type="number"
+                name="tank_quantity[]"
+                placeholder="Quantity"
+                min="1"
+                data-was-required="true"
+              />
+              <button
+                type="button"
+                class="remove-btn"
+                onclick="removeTank(this)"
+                style="display: none"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <line x1="18" y1="6" x2="6" y2="18"></line>
+                  <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <button type="button" class="add-btn" onclick="addTank()">
+            <svg
+              width="16"
+              height="19"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Add Tank
+          </button>
+        </div>
+
+        <!-- Tank Location & Assigned Sales Person -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="tank_location">Tank Location</label>
+            <input
+              type="text"
+              id="tank_location"
+              name="tank_location"
+              placeholder="Enter tank installation location"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="assigned_sales_person" class="required"
+              >Assigned Sales Person</label
+            >
+            <select
+              id="assigned_sales_person"
+              name="assigned_sales_person"
+              data-was-required="true"
+            >
+              <option value="">-- Select Sales Person --</option>
+              <option value="Aniket">Aniket</option>
+              <option value="Manisha">Manisha</option>
+              <option value="Kranti">Kranti</option>
+              <option value="Bipin">Bipin</option>
+              <option value="Jayan">Jayan</option>
+              <option value="Priyabhrata">Priyabhrata</option>
+              <option value="Siva">Siva</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Expected Delivery Date -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="expected_delivery_date"
+              >Expected Delivery Date of Tank</label
+            >
+            <input
+              type="date"
+              id="expected_delivery_date"
+              name="expected_delivery_date"
+            />
+          </div>
+        </div>
+
+        <!-- Remark -->
+        <div class="form-group full-width">
+          <label for="remark_yes" class="required">Remark</label>
+          <textarea
+            id="remark_yes"
+            name="remark"
+            placeholder="Enter detailed discussion notes, client requirements, and next steps..."
+            data-was-required="true"
+          ></textarea>
+        </div>
+      </div>
+      <!-- Regret Offer Container -->
+      <div id="container-regret" class="outcome-container container-no">
+        <div class="container-title">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="color: var(--error)"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M15 9l-6 6M9 9l6 6"></path>
+          </svg>
+          Regret Offer Details
+        </div>
+
+        <!-- Type of Client -->
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="client_type_regret" class="required"
+              >Type of Client</label
+            >
+            <select
+              id="client_type_regret"
+              name="client_type_regret"
+              data-was-required="true"
+              onchange="handleClientTypeChangeRegret(this.value)"
+            >
+              <option value="">-- Select Client Type --</option>
+              <option value="EPC">EPC</option>
+              <option value="CONSULTANT">Consultant</option>
+              <option value="CONTRACTOR">Contractor</option>
+              <option value="END_CLIENT">End Client</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Consultant Sub-options -->
+        <div
+          id="consultant-options-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="consultant_type_regret" class="required"
+              >Consultant Type</label
+            >
+            <select
+              id="consultant_type_regret"
+              name="consultant_type_regret"
+              onchange="handleConsultantChangeRegret(this.value)"
+            >
+              <option value="">-- Select Consultant Type --</option>
+              <option value="Engineering Consultant">
+                Engineering Consultant
+              </option>
+              <option value="Design Engineering Consultant">
+                Design Engineering Consultant
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="consultant-other-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="consultant_other_text_regret" class="required"
+              >Specify Consultant Type</label
+            >
+            <input
+              type="text"
+              id="consultant_other_text_regret"
+              name="consultant_other_text_regret"
+              placeholder="Enter consultant type"
+            />
+          </div>
+        </div>
+
+        <!-- Contractor Sub-options -->
+        <div
+          id="contractor-options-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="contractor_type_regret" class="required"
+              >Contractor Type</label
+            >
+            <select
+              id="contractor_type_regret"
+              name="contractor_type_regret"
+              onchange="handleContractorChangeRegret(this.value)"
+            >
+              <option value="">-- Select Contractor Type --</option>
+              <option value="Fire Contractor">Fire Contractor</option>
+              <option value="Government Contractor">
+                Government Contractor
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="contractor-other-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="contractor_other_text_regret" class="required"
+              >Specify Contractor Type</label
+            >
+            <input
+              type="text"
+              id="contractor_other_text_regret"
+              name="contractor_other_text_regret"
+              placeholder="Enter contractor type"
+            />
+          </div>
+        </div>
+
+        <!-- End Client Sub-options -->
+        <div
+          id="endclient-options-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="endclient_category_regret" class="required"
+              >End Client Category</label
+            >
+            <select
+              id="endclient_category_regret"
+              name="endclient_category_regret"
+              onchange="handleEndClientChangeRegret(this.value)"
+            >
+              <option value="">-- Select Category --</option>
+              <option value="General Manufacturing Company">
+                General Manufacturing Company
+              </option>
+              <option value="Infrastructure and Real Estate">
+                Infrastructure and Real Estate
+              </option>
+              <option value="Chemical and Pharma">Chemical and Pharma</option>
+              <option value="Food, Beverage and Breweries">
+                Food, Beverage and Breweries
+              </option>
+              <option value="Logistics and Warehousing">
+                Logistics and Warehousing
+              </option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Tourism and Hospitality">
+                Tourism and Hospitality
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="endclient-other-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="endclient_other_text_regret" class="required"
+              >Specify End Client Category</label
+            >
+            <input
+              type="text"
+              id="endclient_other_text_regret"
+              name="endclient_other_text_regret"
+              placeholder="Enter end client category"
+            />
+          </div>
+        </div>
+
+        <!-- Follow-up Date & Tank Type -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="followup_date_regret" class="required"
+              >Follow-up Date</label
+            >
+            <input
+              type="date"
+              id="followup_date_regret"
+              name="followup_date_regret"
+              data-was-required="true"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="tank_type_regret" class="required"
+              >Tank Type (Competitor)</label
+            >
+            <select
+              id="tank_type_regret"
+              name="tank_type_regret"
+              data-was-required="true"
+            >
+              <option value="">-- Select Tank Type --</option>
+              <option value="GRP Tank">GRP Tank</option>
+              <option value="FRP Tank">FRP Tank</option>
+              <option value="Smaller Capacity Tank">
+                Smaller Capacity Tank
+              </option>
+              <option value="Concrete Tank">Concrete Tank</option>
+              <option value="MS Tank">MS (Mild Steel) Tank</option>
+              <option value="SS Tank">SS (Stainless Steel) Tank</option>
+              <option value="HDPE Tank">HDPE Tank</option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="tank-type-other-regret"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="tank_type_other_text_regret" class="required"
+              >Specify Tank Type</label
+            >
+            <input
+              type="text"
+              id="tank_type_other_text_regret"
+              name="tank_type_other_text_regret"
+              placeholder="Enter tank type"
+            />
+          </div>
+        </div>
+
+        <!-- Remark -->
+        <div class="form-group full-width">
+          <label for="remark_regret" class="required">Remark</label>
+          <textarea
+            id="remark_regret"
+            name="remark_regret"
+            placeholder="Enter reason for regret, competitor details, and follow-up notes..."
+            data-was-required="true"
+          ></textarea>
+        </div>
+      </div>
+      
+      <!-- Reconnect Container -->
+      <div
+        id="container-reconnect"
+        class="outcome-container container-reconnect"
+      >
+        <div class="container-title">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="color: var(--warning)"
+          >
+            <path
+              d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"
+            ></path>
+          </svg>
+          Reconnect Details
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="followup_date_reconnect" class="required"
+              >Next Follow-up Call Date</label
+            >
+            <input
+              type="date"
+              id="followup_date_reconnect"
+              name="followup_date_reconnect"
+              data-was-required="true"
+            />
+          </div>
+        </div>
+
+        <div class="form-group full-width">
+          <label for="remark_reconnect" class="required">Remark</label>
+          <textarea
+            id="remark_reconnect"
+            name="remark_reconnect"
+            placeholder="Enter reason for reconnect and next steps..."
+            data-was-required="true"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Future Requirement Container -->
+      <div id="container-future" class="outcome-container container-future">
+        <div class="container-title">
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            style="color: var(--info)"
+          >
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          Future Requirement Details
+        </div>
+
+        <!-- Type of Client -->
+        <div class="form-grid">
+          <div class="form-group full-width">
+            <label for="client_type_future" class="required"
+              >Type of Client</label
+            >
+            <select
+              id="client_type_future"
+              name="client_type_future"
+              data-was-required="true"
+              onchange="handleClientTypeChangeFuture(this.value)"
+            >
+              <option value="">-- Select Client Type --</option>
+              <option value="EPC">EPC</option>
+              <option value="CONSULTANT">Consultant</option>
+              <option value="CONTRACTOR">Contractor</option>
+              <option value="END_CLIENT">End Client</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Consultant Sub-options -->
+        <div
+          id="consultant-options-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="consultant_type_future" class="required"
+              >Consultant Type</label
+            >
+            <select
+              id="consultant_type_future"
+              name="consultant_type_future"
+              onchange="handleConsultantChangeFuture(this.value)"
+            >
+              <option value="">-- Select Consultant Type --</option>
+              <option value="Engineering Consultant">
+                Engineering Consultant
+              </option>
+              <option value="Design Engineering Consultant">
+                Design Engineering Consultant
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="consultant-other-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="consultant_other_text_future" class="required"
+              >Specify Consultant Type</label
+            >
+            <input
+              type="text"
+              id="consultant_other_text_future"
+              name="consultant_other_text_future"
+              placeholder="Enter consultant type"
+            />
+          </div>
+        </div>
+
+        <!-- Contractor Sub-options -->
+        <div
+          id="contractor-options-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="contractor_type_future" class="required"
+              >Contractor Type</label
+            >
+            <select
+              id="contractor_type_future"
+              name="contractor_type_future"
+              onchange="handleContractorChangeFuture(this.value)"
+            >
+              <option value="">-- Select Contractor Type --</option>
+              <option value="Fire Contractor">Fire Contractor</option>
+              <option value="Government Contractor">
+                Government Contractor
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="contractor-other-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="contractor_other_text_future" class="required"
+              >Specify Contractor Type</label
+            >
+            <input
+              type="text"
+              id="contractor_other_text_future"
+              name="contractor_other_text_future"
+              placeholder="Enter contractor type"
+            />
+          </div>
+        </div>
+
+        <!-- End Client Sub-options -->
+        <div
+          id="endclient-options-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="endclient_category_future" class="required"
+              >End Client Category</label
+            >
+            <select
+              id="endclient_category_future"
+              name="endclient_category_future"
+              onchange="handleEndClientChangeFuture(this.value)"
+            >
+              <option value="">-- Select Category --</option>
+              <option value="General Manufacturing Company">
+                General Manufacturing Company
+              </option>
+              <option value="Infrastructure and Real Estate">
+                Infrastructure and Real Estate
+              </option>
+              <option value="Chemical and Pharma">Chemical and Pharma</option>
+              <option value="Food, Beverage and Breweries">
+                Food, Beverage and Breweries
+              </option>
+              <option value="Logistics and Warehousing">
+                Logistics and Warehousing
+              </option>
+              <option value="Agriculture">Agriculture</option>
+              <option value="Tourism and Hospitality">
+                Tourism and Hospitality
+              </option>
+              <option value="Other">Other (Specify)</option>
+            </select>
+          </div>
+        </div>
+
+        <div
+          id="endclient-other-future"
+          class="form-grid"
+          style="display: none"
+        >
+          <div class="form-group full-width">
+            <label for="endclient_other_text_future" class="required"
+              >Specify End Client Category</label
+            >
+            <input
+              type="text"
+              id="endclient_other_text_future"
+              name="endclient_other_text_future"
+              placeholder="Enter end client category"
+            />
+          </div>
+        </div>
+
+        <!-- Follow-up Date -->
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="followup_date_future" class="required"
+              >Follow-up Date</label
+            >
+            <input
+              type="date"
+              id="followup_date_future"
+              name="followup_date_future"
+              data-was-required="true"
+            />
+          </div>
+        </div>
+
+        <!-- Remark -->
+        <div class="form-group full-width">
+          <label for="remark_future" class="required">Remark</label>
+          <textarea
+            id="remark_future"
+            name="remark_future"
+            placeholder="Enter details about future requirement, timeline, and expectations..."
+            data-was-required="true"
+          ></textarea>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary">
+          Save & Continue
+        </button>
+
+
+        <a href="{% url 'lead_list' %}" class="btn btn-secondary"> Cancel </a>
+      </div>
+
+      <!-- Toast Notification Container -->
+      <div id="toast-container"></div>
+
+      <div
+        id="lead-data"
+        data-created-at="{{ lead.created_at|date:'Y-m-d' }}"
+        style="display: none"
+      ></div>
+    </form>
+    </div>
+
+    <!-- ========================================
+         RECONNECT HISTORY SECTION
+         ======================================== -->
+    {% if call_history.exists %}
+    <div class="info-card">
+      <h3 class="card-title">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <circle cx="12" cy="12" r="10"></circle>
+          <polyline points="12 6 12 12 16 14"></polyline>
+        </svg>
+        Call History ({{ call_history.count }} {{ call_history.count|pluralize:"call,calls" }})
+      </h3>
+
+      <div class="timeline">
+        {% for history_item in call_history %}
+        <div class="timeline-item">
+          <div class="timeline-dot {% if history_item.outcome == 'yes' %}success{% endif %}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="12" r="12"></circle>
+            </svg>
+          </div>
+          <div class="timeline-content {% if history_item.outcome == 'yes' %}success{% endif %}">
+            <div class="timeline-title">
+              Outcome: 
+              <strong class="stage-text">{{ history_item.get_outcome_display }}</strong>
+            </div>
+            <div class="timeline-meta">
+              {{ history_item.actual_call_date|date:"d M Y" }} • 
+              {% if history_item.created_by.get_full_name %}
+                {{ history_item.created_by.get_full_name }}
+              {% else %}
+                {{ history_item.created_by.username }}
+              {% endif %}
+              {% if history_item.expected_call_date %}
+                • Expected: {{ history_item.expected_call_date|date:"d M Y" }}
+              {% endif %}
+            </div>
+            {% if history_item.remark %}
+            <div class="timeline-text">
+              <strong>Remark:</strong> {{ history_item.remark }}
+            </div>
+            {% else %}
+            <div
+              class="timeline-text"
+              style="color: var(--text-secondary); font-style: italic"
+            >
+              No remark provided
+            </div>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+      <script src="{% static 'js/lead_detail.js' %}"></script>
+
+      {% endblock %}
+  
+  </div>
+</div>

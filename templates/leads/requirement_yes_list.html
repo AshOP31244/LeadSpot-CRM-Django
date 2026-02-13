@@ -1,0 +1,481 @@
+{% extends 'leads/base.html' %}
+{% load static %}
+
+{% block title %}Requirement Yes - LeadSpot{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary: #1a1a1a;
+    --bg: #fafafa;
+    --card-bg: #ffffff;
+    --border: #e5e5e5;
+    --text: #1a1a1a;
+    --text-secondary: #666;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --info: #3b82f6;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* Navbar */
+  .navbar {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 32px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .navbar-brand {
+    font-size: 20px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+  }
+
+  .navbar-actions {
+    display: flex;
+    gap: 12px;
+  }
+
+  .nav-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: var(--text);
+  }
+
+  .nav-icon:hover {
+    border-color: var(--primary);
+    background: var(--bg);
+  }
+
+  .container {
+    margin-top: 64px;
+    padding: 32px;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* Page Header */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+
+  .page-title {
+    font-size: 28px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .header-stats {
+    display: flex;
+    gap: 24px;
+  }
+
+  .stat-item {
+    text-align: center;
+  }
+
+  .stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--success);
+  }
+
+  .stat-label {
+    font-size: 13px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* Table Container */
+  .table-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+
+  .table-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .table-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .filter-group {
+    display: flex;
+    gap: 12px;
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .filter-btn:hover {
+    background: var(--bg);
+    border-color: var(--primary);
+  }
+
+  /* Table */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  thead th {
+    padding: 14px 24px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+  }
+
+  tbody td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  tbody tr {
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+
+  tbody tr:hover {
+    background: var(--bg);
+  }
+
+  tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Badges */
+  .stage-badge {
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: inline-block;
+  }
+
+  .stage-quotation_sent {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .stage-pre_sales {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .stage-meeting_scheduled {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  .stage-waiting_po {
+    background: #fef9c3;
+    color: #854d0e;
+  }
+
+  .stage-po_received {
+    background: #dcfce7;
+    color: #166534;
+  }
+
+  .stage-order_converted {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .stage-not_converted {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* New order tracking stages */
+  .stage-costing_created {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  .stage-quotation_created {
+    background: #dbeafe;
+    color: #1e40af;
+  }
+
+  .stage-quotation_revision {
+    background: #fef3c7;
+    color: #92400e;
+  }
+
+  .stage-quotation_accepted {
+    background: #d1fae5;
+    color: #065f46;
+  }
+
+  .stage-oa_created {
+    background: #e0e7ff;
+    color: #4338ca;
+  }
+
+  .stage-oa_sent {
+    background: #ddd6fe;
+    color: #5b21b6;
+  }
+
+  .stage-oa_revision {
+    background: #fed7aa;
+    color: #9a3412;
+  }
+
+  .stage-oa_accepted {
+    background: #bbf7d0;
+    color: #14532d;
+  }
+
+  .stage-order_completed {
+    background: #86efac;
+    color: #14532d;
+  }
+
+  .stage-order_lost {
+    background: #fee2e2;
+    color: #991b1b;
+  }
+
+  /* Company Info */
+  .company-name {
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 2px;
+  }
+
+  .lead-code {
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-family: "Courier New", monospace;
+  }
+
+  /* Tank Info */
+  .tank-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+  }
+
+  .tank-count {
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  /* Empty State */
+  .empty-state {
+    text-align: center;
+    padding: 80px 20px;
+  }
+
+  .empty-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 16px;
+    opacity: 0.3;
+  }
+
+  .empty-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+
+  .empty-description {
+    font-size: 14px;
+    color: var(--text-secondary);
+  }
+</style>
+
+<nav class="navbar">
+  <div class="navbar-brand">Lead Spot</div>
+  <div class="navbar-actions">
+    <a href="{% url 'lead_list' %}" class="nav-icon" title="Prospects">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    </a>
+    <a href="{% url 'requirement_yes_list' %}" class="nav-icon" title="Requirements" style="border-color: var(--success); background: rgba(22, 163, 74, 0.1);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <path d="M22 4L12 14.01l-3-3"></path>
+      </svg>
+    </a>
+    <a href="{% url 'customers_list' %}" class="nav-icon" title="Customers">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+      </svg>
+    </a>
+    <a href="{% url 'lost_orders_list' %}" class="nav-icon" title="Lost Orders">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="10"></circle>
+        <line x1="15" y1="9" x2="9" y2="15"></line>
+        <line x1="9" y1="9" x2="15" y2="15"></line>
+      </svg>
+    </a>
+    <div class="nav-icon" title="Export">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"></path>
+      </svg>
+    </div>
+    <a href="{% url 'logout' %}" class="nav-icon" title="Logout">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+      </svg>
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">Requirement Yes</h1>
+    <div class="header-stats">
+      <div class="stat-item">
+        <div class="stat-value">{{ requirements.count }}</div>
+        <div class="stat-label">Total Leads</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Table Card -->
+  <div class="table-card">
+    <div class="table-header">
+      <div class="table-title">Active Requirements</div>
+      <div class="filter-group">
+        <button class="filter-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
+          </svg>
+          Filter
+        </button>
+      </div>
+    </div>
+
+    {% if requirements %}
+    <table>
+      <thead>
+        <tr>
+          <th>Company</th>
+          <th>City</th>
+          <th>Contact Person</th>
+          <th>Client Type</th>
+          <th>Tanks</th>
+          <th>Sales Person</th>
+          <th>Order Status</th>
+          <th>Latest Update</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for requirement in requirements %}
+        <tr onclick="window.location.href='{% url 'requirement_yes_detail' requirement.lead.id %}'">
+          <td>
+            <div class="company-name">{{ requirement.lead.company_name }}</div>
+            <div class="lead-code">{{ requirement.lead.lead_code }}</div>
+          </td>
+          <td>{{ requirement.lead.city }}</td>
+          <td>{{ requirement.lead.contact_name|default:"Not specified" }}</td>
+          <td>
+            <div>{{ requirement.client_type_main }}</div>
+            {% if requirement.client_type_detail %}
+            <div class="tank-info">{{ requirement.client_type_detail }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <span class="tank-count">{{ requirement.tanks_json|length }}</span>
+            <span class="tank-info">tank{{ requirement.tanks_json|length|pluralize }}</span>
+          </td>
+          <td>{{ requirement.assigned_sales_person }}</td>
+          <td>
+            <span class="stage-badge stage-{{ requirement.sales_stage }}">
+              {{ requirement.get_sales_stage_display }}
+            </span>
+          </td>
+          <td>
+            {% if requirement.current_remark %}
+            <div style="font-size: 13px; color: var(--text); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              {{ requirement.current_remark|truncatewords:10 }}
+            </div>
+            {% else %}
+            <span style="color: var(--text-secondary); font-size: 12px;">No update</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <path d="M22 4L12 14.01l-3-3"></path>
+      </svg>
+      <div class="empty-title">No Requirements Yet</div>
+      <div class="empty-description">
+        Requirement Yes leads will appear here once marketing qualifies them
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

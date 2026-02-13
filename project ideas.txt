@@ -1,0 +1,16 @@
+1)alert to be shown in red if data field is not filled 
+2)reduced the click (date auto select once open the details page)
+3) add a email brochure sender incase we dont send the brochure on that mail or the email got changed
+4)date should be displayd in the list prospect 
+5)sales person name in req yes stage 
+6)add a button in reconnect that will auto send a mail to person for a reminder to get the official mail for the requirement 
+7)requirement no people add a button that will send a auto template to this people after 1 2 months 
+8)in requirement NO  remark section for followup have a dropdown of 3 4 comman reminders like 
+	a)check updates for the project 
+	b)check for any project updates 
+9)on selecting req yes , it should also have a other option in selecting the sales person(incase of other orders)
+10)give suggestion on typing the same lead if it is avaialbale in the database
+12)use flatpickr calender rather than browser calendar
+14)in prospect stage for reconnect people it should also show last updated date 
+15)in req yes stage when filling the details of req it should show preview and also add a option to upload a attachment if there's any 
+16)On the Backend (Django): Use email-validator with check_deliverability=True. This will catch cases where a user makes up a fake company name like test@thisdomaindoesnotexist123.com

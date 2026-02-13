@@ -1,0 +1,1687 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>{% block title %}LeadSpot{% endblock %}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+
+    <style>
+      /* Base reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        background: #ffffff;
+        color: #1d1d1f;
+        line-height: 1.47059;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      /* ============================================
+         ENHANCED GLOBAL NAVBAR - PROFESSIONAL GREY THEME
+         ============================================ */
+      .global-navbar {
+        background: rgba(255, 255, 255, 0.95);
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+        padding: 0 16px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      .global-navbar.scrolled {
+        background: rgba(255, 255, 255, 0.98);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        height: 56px;
+      }
+
+      .navbar-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+      }
+
+      .navbar-brand {
+        font-size: 17px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        color: #1d1d1f;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        -webkit-touch-callout: none;
+      }
+
+      .navbar-brand:hover {
+        opacity: 0.8;
+      }
+
+      .brand-icon {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        box-shadow: 0 2px 8px rgba(0, 122, 255, 0.15);
+      }
+
+      .navbar-menu {
+        display: flex;
+        gap: 1px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .nav-link {
+        padding: 8px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #8E8E93;
+        text-decoration: none;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        position: relative;
+        -webkit-touch-callout: none;
+      }
+
+      .nav-link:hover {
+        background: rgba(0, 0, 0, 0.03);
+        color: #1d1d1f;
+        transform: translateY(-1px);
+      }
+
+      .nav-link.active {
+        background: rgba(0, 122, 255, 0.1);
+        color: #007AFF;
+        font-weight: 600;
+      }
+
+      .nav-link.active::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 12px;
+        right: 12px;
+        height: 2px;
+        background: #007AFF;
+        border-radius: 2px;
+        opacity: 0.8;
+      }
+
+      .nav-link svg {
+        width: 14px;
+        height: 14px;
+        opacity: 0.8;
+        transition: all 0.2s ease;
+      }
+
+      .nav-link:hover svg,
+      .nav-link.active svg {
+        opacity: 1;
+      }
+
+      .navbar-right {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .nav-icon-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        text-decoration: none;
+        color: #8E8E93;
+        position: relative;
+        -webkit-touch-callout: none;
+      }
+
+      .nav-icon-btn:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: #1d1d1f;
+        transform: scale(1.05);
+      }
+
+      .nav-icon-btn:active {
+        transform: scale(0.95);
+        transition: transform 0.1s;
+      }
+
+      .btn-add-lead {
+        padding: 8px 14px;
+        background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0, 122, 255, 0.25);
+        -webkit-touch-callout: none;
+      }
+
+      .btn-add-lead:hover {
+        background: linear-gradient(135deg, #0056CC 0%, #004199 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+      }
+
+      .btn-add-lead:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(0, 122, 255, 0.25);
+      }
+
+      /* User Menu */
+      .user-menu {
+        position: relative;
+      }
+
+      .user-trigger {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 4px 6px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        background: rgba(0, 0, 0, 0.02);
+        -webkit-touch-callout: none;
+      }
+
+      .user-trigger:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .user-trigger:active {
+        transform: scale(0.95);
+      }
+
+      .user-avatar {
+        width: 28px;
+        height: 28px;
+        background: linear-gradient(135deg, #FF2D55 0%, #FF9500 100%);
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        font-size: 12px;
+        box-shadow: 0 2px 6px rgba(255, 45, 85, 0.15);
+      }
+
+      .user-info {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .user-name {
+        font-size: 12px;
+        font-weight: 500;
+        color: #1d1d1f;
+      }
+
+      .user-role {
+        font-size: 10px;
+        color: #8E8E93;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+      }
+
+      .user-dropdown {
+        position: absolute;
+        top: calc(100% + 8px);
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        border: 0.5px solid rgba(0, 0, 0, 0.1);
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1), 0 2px 8px rgba(0, 0, 0, 0.08);
+        min-width: 180px;
+        display: none;
+        z-index: 1001;
+        overflow: hidden;
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        transform-origin: top right;
+        animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .user-dropdown.show {
+        display: block;
+        animation: dropdownAppear 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes dropdownAppear {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(-10px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .dropdown-item {
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        color: #1d1d1f;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+        font-size: 14px;
+      }
+
+      .dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      .dropdown-item:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .dropdown-item:active {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .dropdown-item svg {
+        width: 14px;
+        height: 14px;
+        color: #8E8E93;
+      }
+
+      /* ============================================
+         MOBILE BOTTOM NAV BAR (Apple-style)
+         ============================================ */
+      .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(255, 255, 255, 0.98);
+        border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+        display: none;
+        justify-content: space-around;
+        align-items: center;
+        padding: 12px 0;
+        z-index: 999;
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+        transform: translateY(0);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 -2px 20px rgba(0, 0, 0, 0.05);
+      }
+
+      .mobile-bottom-nav.hidden {
+        transform: translateY(100%);
+      }
+
+      .mobile-nav-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        color: #8E8E93;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        flex: 1;
+        padding: 4px 0;
+        -webkit-touch-callout: none;
+      }
+
+      .mobile-nav-item:hover {
+        color: #007AFF;
+      }
+
+      .mobile-nav-item.active {
+        color: #007AFF;
+      }
+
+      .mobile-nav-item.active .mobile-nav-icon {
+        background: rgba(0, 122, 255, 0.12);
+        transform: scale(1.1);
+      }
+
+      .mobile-nav-icon {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 4px;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .mobile-nav-icon svg {
+        width: 16px;
+        height: 16px;
+        stroke-width: 2.2;
+      }
+
+      .mobile-nav-label {
+        font-size: 10px;
+        font-weight: 500;
+        letter-spacing: 0.2px;
+      }
+
+      /* Active indicator dot */
+      .mobile-nav-item.active::after {
+        content: '';
+        position: absolute;
+        top: 2px;
+        width: 4px;
+        height: 4px;
+        background: #007AFF;
+        border-radius: 50%;
+        opacity: 0.9;
+      }
+
+      /* Floating action button for mobile */
+      .mobile-fab {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background: linear-gradient(135deg, #007AFF 0%, #0056CC 100%);
+        border-radius: 16px;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        cursor: pointer;
+        z-index: 998;
+        box-shadow: 0 4px 20px rgba(0, 122, 255, 0.3), 0 8px 30px rgba(0, 122, 255, 0.2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        -webkit-touch-callout: none;
+      }
+
+      .mobile-fab:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 8px 30px rgba(0, 122, 255, 0.4), 0 12px 40px rgba(0, 122, 255, 0.25);
+      }
+
+      .mobile-fab:active {
+        transform: translateY(0) scale(0.95);
+        box-shadow: 0 2px 10px rgba(0, 122, 255, 0.3);
+      }
+
+      /* ============================================
+         MOBILE SIDE DRAWER MENU
+         ============================================ */
+      .mobile-drawer-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        z-index: 2000;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .mobile-drawer-overlay.show {
+        display: block;
+        opacity: 1;
+      }
+
+      .mobile-drawer {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: 280px;
+        background: rgba(255, 255, 255, 0.98);
+        backdrop-filter: saturate(180%) blur(30px);
+        -webkit-backdrop-filter: saturate(180%) blur(30px);
+        z-index: 2001;
+        transform: translateX(100%);
+        transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        border-left: 0.5px solid rgba(0, 0, 0, 0.1);
+        box-shadow: -10px 0 30px rgba(0, 0, 0, 0.1);
+      }
+
+      .mobile-drawer.show {
+        transform: translateX(0);
+      }
+
+      .drawer-header {
+        padding: 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .drawer-title {
+        font-size: 17px;
+        font-weight: 600;
+        color: #1d1d1f;
+      }
+
+      .drawer-close {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        background: rgba(0, 0, 0, 0.02);
+      }
+
+      .drawer-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+      }
+
+      .drawer-menu {
+        flex: 1;
+        padding: 20px 0;
+        overflow-y: auto;
+      }
+
+      .drawer-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 20px;
+        text-decoration: none;
+        color: #1d1d1f;
+        transition: all 0.2s;
+        font-size: 16px;
+        border-left: 3px solid transparent;
+      }
+
+      .drawer-item:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .drawer-item.active {
+        background: rgba(0, 122, 255, 0.08);
+        color: #007AFF;
+        border-left-color: #007AFF;
+      }
+
+      .drawer-item svg {
+        width: 18px;
+        height: 18px;
+        opacity: 0.8;
+      }
+
+      .drawer-item.active svg {
+        opacity: 1;
+      }
+
+      .drawer-footer {
+        padding: 20px;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .drawer-user {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(0, 0, 0, 0.02);
+        border-radius: 10px;
+      }
+
+      .drawer-user-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #FF2D55 0%, #FF9500 100%);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        font-size: 16px;
+      }
+
+      .drawer-user-info {
+        flex: 1;
+      }
+
+      .drawer-user-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #1d1d1f;
+      }
+
+      .drawer-user-role {
+        font-size: 12px;
+        color: #8E8E93;
+      }
+
+      /* ============================================
+         UNIVERSAL SEARCH MODAL - ENHANCED
+         ============================================ */
+      .search-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.4);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        z-index: 2000;
+        display: none;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 60px;
+      }
+
+      .search-modal-overlay.show {
+        display: flex;
+        animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+
+      .search-modal {
+        background: rgba(255, 255, 255, 0.98);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 500px;
+        max-height: 70vh;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15), 0 5px 15px rgba(0, 0, 0, 0.08);
+        animation: slideInDown 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 0.5px solid rgba(0, 0, 0, 0.1);
+        backdrop-filter: saturate(180%) blur(20px);
+        -webkit-backdrop-filter: saturate(180%) blur(20px);
+      }
+
+      @keyframes slideInDown {
+        from {
+          opacity: 0;
+          transform: translateY(-30px) scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .search-header {
+        padding: 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.1);
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 14px 44px 14px 42px;
+        border: none;
+        border-radius: 10px;
+        font-size: 16px;
+        transition: all 0.2s;
+        background: rgba(0, 0, 0, 0.02);
+        color: #1d1d1f;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+
+      .search-input:focus {
+        outline: none;
+        background: rgba(0, 0, 0, 0.04);
+      }
+
+      .search-input::placeholder {
+        color: #8E8E93;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 12px;
+        color: #8E8E93;
+      }
+
+      .search-close {
+        position: absolute;
+        right: 12px;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.2s;
+        color: #8E8E93;
+      }
+
+      .search-close:hover {
+        background: rgba(0, 0, 0, 0.05);
+        color: #1d1d1f;
+      }
+
+      .search-results {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-bottom: 20px;
+      }
+
+      .search-category {
+        padding: 12px 20px;
+        background: rgba(0, 0, 0, 0.02);
+        font-size: 12px;
+        font-weight: 600;
+        color: #8E8E93;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-top: 0.5px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .search-result-item {
+        padding: 14px 20px;
+        border-bottom: 0.5px solid rgba(0, 0, 0, 0.05);
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .search-result-item:last-child {
+        border-bottom: none;
+      }
+
+      .search-result-item:hover {
+        background: rgba(0, 0, 0, 0.03);
+      }
+
+      .search-result-item:active {
+        background: rgba(0, 0, 0, 0.05);
+        transform: scale(0.995);
+      }
+
+      .result-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #007AFF 0%, #5856D6 100%);
+        border-radius: 9px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 500;
+        font-size: 12px;
+        flex-shrink: 0;
+      }
+
+      .result-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .result-title {
+        font-size: 14px;
+        font-weight: 500;
+        color: #1d1d1f;
+        margin-bottom: 4px;
+      }
+
+      .result-details {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 12px;
+        color: #8E8E93;
+      }
+
+      .result-detail {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .result-stage {
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        background: rgba(0, 0, 0, 0.05);
+        color: #1d1d1f;
+      }
+
+      .search-empty {
+        padding: 40px 20px;
+        text-align: center;
+        color: #8E8E93;
+      }
+
+      .search-empty-icon {
+        width: 40px;
+        height: 40px;
+        margin: 0 auto 16px;
+        opacity: 0.3;
+      }
+
+      .search-empty-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #1d1d1f;
+      }
+
+      .search-empty-text {
+        font-size: 13px;
+        color: #8E8E93;
+        line-height: 1.4;
+      }
+
+      /* Main content area */
+      main {
+        margin-top: 60px;
+        padding: 20px;
+        padding-bottom: 80px; /* Space for bottom nav */
+        min-height: calc(100vh - 60px);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      main.with-bottom-nav {
+        padding-bottom: 140px;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .global-navbar {
+          padding: 0 12px;
+          height: 56px;
+        }
+
+        .navbar-brand {
+          font-size: 16px;
+        }
+
+        .brand-icon {
+          width: 26px;
+          height: 26px;
+        }
+
+        .navbar-menu {
+          display: none;
+        }
+
+        .mobile-bottom-nav {
+          display: flex;
+        }
+
+        .mobile-fab {
+          display: flex;
+        }
+
+        .user-info {
+          display: none;
+        }
+
+        .navbar-right {
+          gap: 6px;
+        }
+
+        .btn-add-lead span {
+          display: none;
+        }
+
+        .btn-add-lead {
+          padding: 8px;
+          width: 36px;
+          height: 36px;
+        }
+
+        main {
+          padding: 16px;
+          padding-bottom: 140px;
+          margin-top: 56px;
+        }
+
+        .search-modal {
+          width: 95%;
+          max-height: 80vh;
+        }
+
+        .search-modal-overlay {
+          padding-top: 20px;
+        }
+      }
+
+      @media (min-width: 769px) {
+        .mobile-bottom-nav {
+          display: none !important;
+        }
+
+        .mobile-fab {
+          display: none !important;
+        }
+      }
+
+      /* Hide desktop navbar on mobile when bottom nav is active */
+      @media (max-width: 768px) {
+        .global-navbar.scrolled {
+          transform: translateY(-100%);
+        }
+
+        /* Show navbar when at top of page */
+        .global-navbar.at-top {
+          transform: translateY(0);
+        }
+      }
+
+      /* Smooth transitions for all interactive elements */
+      .nav-link, .nav-icon-btn, .btn-add-lead, .dropdown-item, 
+      .mobile-nav-item, .mobile-fab, .drawer-item, .search-result-item {
+        will-change: transform, background-color, color;
+      }
+
+      /* iOS Safari specific fixes */
+      @supports (-webkit-touch-callout: none) {
+        .global-navbar,
+        .mobile-bottom-nav,
+        .search-modal,
+        .mobile-drawer {
+          background: rgba(255, 255, 255, 0.92);
+        }
+        
+        .search-input {
+          font-size: 16px; /* Prevent zoom on iOS */
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Global Navbar -->
+    <nav class="global-navbar" id="globalNavbar">
+      <div class="navbar-left">
+        <a href="{% url 'lead_list' %}" class="navbar-brand">
+          <div class="brand-icon">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+              <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+            </svg>
+          </div>
+          LeadSpot
+        </a>
+
+        <div class="navbar-menu">
+          <a href="{% url 'lead_list' %}" class="nav-link {% if request.resolver_match.url_name == 'lead_list' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            Prospects
+          </a>
+
+          <a href="{% url 'requirement_yes_list' %}" class="nav-link {% if request.resolver_match.url_name == 'requirement_yes_list' or request.resolver_match.url_name == 'requirement_yes_detail' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <path d="M22 4L12 14.01l-3-3"></path>
+            </svg>
+            Requirements
+          </a>
+
+          <a href="{% url 'future_requirements_list' %}" class="nav-link {% if request.resolver_match.url_name == 'future_requirements_list' or request.resolver_match.url_name == 'future_requirement_detail' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <path d="M12 6v6l4 2"></path>
+            </svg>
+            Future
+          </a>
+
+          <a href="{% url 'regret_offers_list' %}" class="nav-link {% if request.resolver_match.url_name == 'regret_offers_list' or request.resolver_match.url_name == 'regret_offer_detail' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            Regret
+          </a>
+
+          <a href="{% url 'customers_list' %}" class="nav-link {% if request.resolver_match.url_name == 'customers_list' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+            </svg>
+            Customers
+          </a>
+
+          <a href="{% url 'lost_orders_list' %}" class="nav-link {% if request.resolver_match.url_name == 'lost_orders_list' %}active{% endif %}">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3h18v18H3zM15 9l-6 6m0-6l6 6"></path>
+            </svg>
+            Lost Orders
+          </a>
+        </div>
+      </div>
+
+      <div class="navbar-right">
+        <!-- Universal Search Button -->
+        <button class="nav-icon-btn" onclick="openSearchModal()" title="Search (Ctrl+K)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <path d="m21 21-4.35-4.35"></path>
+          </svg>
+        </button>
+
+        <a href="{% url 'add_lead' %}" class="btn-add-lead">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          <span>Add Lead</span>
+        </a>
+
+        <a href="#" class="nav-icon-btn" title="Export">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"></path>
+          </svg>
+        </a>
+
+        <div class="user-menu">
+          <div class="user-trigger" onclick="toggleUserMenu()">
+            <div class="user-avatar">
+              {{ user.username|slice:":1"|upper }}
+            </div>
+            <div class="user-info">
+              <div class="user-name">{{ user.username }}</div>
+              <div class="user-role">{{ user.profile.get_role_display|default:"User" }}</div>
+            </div>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+
+          <div class="user-dropdown" id="userDropdown">
+            <a href="#" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
+              </svg>
+              Profile
+            </a>
+            <a href="#" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="3"></circle>
+                <path d="M12 1v6m0 6v6m5.2-14.2l-4.2 4.2m0 6l-4.2 4.2m14.2-5.2h-6m-6 0H1m14.2 5.2l-4.2-4.2m0-6l-4.2-4.2"></path>
+              </svg>
+              Settings
+            </a>
+            <a href="{% url 'logout' %}" class="dropdown-item">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+              </svg>
+              Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Mobile Bottom Navigation Bar -->
+    <nav class="mobile-bottom-nav" id="mobileBottomNav">
+      <a href="{% url 'lead_list' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'lead_list' %}active{% endif %}">
+        <div class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">Prospects</span>
+      </a>
+
+      <a href="{% url 'requirement_yes_list' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'requirement_yes_list' or request.resolver_match.url_name == 'requirement_yes_detail' %}active{% endif %}">
+        <div class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <path d="M22 4L12 14.01l-3-3"></path>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">Requirements</span>
+      </a>
+
+      <a href="{% url 'future_requirements_list' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'future_requirements_list' or request.resolver_match.url_name == 'future_requirement_detail' %}active{% endif %}">
+        <div class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">Future</span>
+      </a>
+
+      <a href="{% url 'customers_list' %}" class="mobile-nav-item {% if request.resolver_match.url_name == 'customers_list' %}active{% endif %}">
+        <div class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">Customers</span>
+      </a>
+
+      <a href="#" class="mobile-nav-item" onclick="toggleDrawer()">
+        <div class="mobile-nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </div>
+        <span class="mobile-nav-label">More</span>
+      </a>
+    </nav>
+
+    <!-- Mobile Floating Action Button -->
+    <button class="mobile-fab" onclick="window.location.href='{% url 'add_lead' %}'" title="Add New Lead">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    </button>
+
+    <!-- Mobile Side Drawer Menu -->
+    <div class="mobile-drawer-overlay" id="drawerOverlay" onclick="closeDrawer()"></div>
+    <div class="mobile-drawer" id="mobileDrawer">
+      <div class="drawer-header">
+        <div class="drawer-title">Navigation</div>
+        <div class="drawer-close" onclick="closeDrawer()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </div>
+      </div>
+
+      <div class="drawer-menu">
+        <a href="{% url 'lead_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'lead_list' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          Prospects
+        </a>
+
+        <a href="{% url 'requirement_yes_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'requirement_yes_list' or request.resolver_match.url_name == 'requirement_yes_detail' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <path d="M22 4L12 14.01l-3-3"></path>
+          </svg>
+          Requirements
+        </a>
+
+        <a href="{% url 'future_requirements_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'future_requirements_list' or request.resolver_match.url_name == 'future_requirement_detail' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <path d="M12 6v6l4 2"></path>
+          </svg>
+          Future Requirements
+        </a>
+
+        <a href="{% url 'regret_offers_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'regret_offers_list' or request.resolver_match.url_name == 'regret_offer_detail' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="15" y1="9" x2="9" y2="15"></line>
+            <line x1="9" y1="9" x2="15" y2="15"></line>
+          </svg>
+          Regret Offers
+        </a>
+
+        <a href="{% url 'customers_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'customers_list' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
+          </svg>
+          Customers
+        </a>
+
+        <a href="{% url 'lost_orders_list' %}" class="drawer-item {% if request.resolver_match.url_name == 'lost_orders_list' %}active{% endif %}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 3h18v18H3zM15 9l-6 6m0-6l6 6"></path>
+          </svg>
+          Lost Orders
+        </a>
+
+        <a href="#" class="drawer-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5-5 5 5M12 5v12"></path>
+          </svg>
+          Export Data
+        </a>
+
+        <a href="#" class="drawer-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M12 1v6m0 6v6m5.2-14.2l-4.2 4.2m0 6l-4.2 4.2m14.2-5.2h-6m-6 0H1m14.2 5.2l-4.2-4.2m0-6l-4.2-4.2"></path>
+          </svg>
+          Settings
+        </a>
+      </div>
+
+      <div class="drawer-footer">
+        <div class="drawer-user">
+          <div class="drawer-user-avatar">
+            {{ user.username|slice:":1"|upper }}
+          </div>
+          <div class="drawer-user-info">
+            <div class="drawer-user-name">{{ user.username }}</div>
+            <div class="drawer-user-role">{{ user.profile.get_role_display|default:"User" }}</div>
+          </div>
+          <a href="{% url 'logout' %}" class="nav-icon-btn" style="background: rgba(255, 59, 48, 0.1); color: #FF3B30;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"></path>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Universal Search Modal -->
+    <div class="search-modal-overlay" id="searchModal">
+      <div class="search-modal">
+        <div class="search-header">
+          <div class="search-input-wrapper">
+            <div class="search-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </div>
+            <input
+              type="text"
+              class="search-input"
+              id="universalSearchInput"
+              placeholder="Search by company, contact, email, or phone..."
+              autocomplete="off"
+            />
+            <div class="search-close" onclick="closeSearchModal()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="search-results" id="searchResults">
+          <div class="search-empty">
+            <svg class="search-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <div class="search-empty-title">Search your leads</div>
+            <div class="search-empty-text">
+              Type to search by company name, contact name, email, or phone number
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content -->
+    <main id="mainContent">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Scripts -->
+    <script>
+      // ============================================
+      // SMOOTH NAVBAR SCROLL BEHAVIOR (Apple-style)
+      // ============================================
+      let lastScrollTop = 0;
+      const navbar = document.getElementById('globalNavbar');
+      const mobileNav = document.getElementById('mobileBottomNav');
+      let ticking = false;
+
+      function updateNavbarOnScroll() {
+        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+        
+        if (scrollTop > 50) {
+          navbar.classList.add('scrolled');
+          
+          // Hide mobile nav when scrolling down, show when scrolling up
+          if (scrollTop > lastScrollTop && scrollTop > 100) {
+            mobileNav.classList.add('hidden');
+          } else {
+            mobileNav.classList.remove('hidden');
+          }
+        } else {
+          navbar.classList.remove('scrolled');
+          navbar.classList.add('at-top');
+          mobileNav.classList.remove('hidden');
+        }
+        
+        // Show desktop navbar at top of page on mobile
+        if (scrollTop === 0) {
+          navbar.classList.remove('scrolled');
+          navbar.classList.add('at-top');
+        } else {
+          navbar.classList.remove('at-top');
+        }
+        
+        lastScrollTop = scrollTop;
+        ticking = false;
+      }
+
+      function onScroll() {
+        if (!ticking) {
+          window.requestAnimationFrame(updateNavbarOnScroll);
+          ticking = true;
+        }
+      }
+
+      window.addEventListener('scroll', onScroll, { passive: true });
+
+      // ============================================
+      // USER MENU
+      // ============================================
+      function toggleUserMenu() {
+        const dropdown = document.getElementById('userDropdown');
+        dropdown.classList.toggle('show');
+      }
+
+      document.addEventListener('click', function(event) {
+        const userMenu = document.querySelector('.user-menu');
+        if (!userMenu.contains(event.target)) {
+          document.getElementById('userDropdown').classList.remove('show');
+        }
+      });
+
+      // ============================================
+      // MOBILE DRAWER FUNCTIONS
+      // ============================================
+      function toggleDrawer() {
+        const drawer = document.getElementById('mobileDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        
+        if (drawer.classList.contains('show')) {
+          closeDrawer();
+        } else {
+          openDrawer();
+        }
+      }
+
+      function openDrawer() {
+        const drawer = document.getElementById('mobileDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const main = document.getElementById('mainContent');
+        
+        overlay.classList.add('show');
+        drawer.classList.add('show');
+        main.style.transform = 'translateX(-20px)';
+        main.style.opacity = '0.8';
+        
+        // Prevent body scroll
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeDrawer() {
+        const drawer = document.getElementById('mobileDrawer');
+        const overlay = document.getElementById('drawerOverlay');
+        const main = document.getElementById('mainContent');
+        
+        overlay.classList.remove('show');
+        drawer.classList.remove('show');
+        main.style.transform = 'translateX(0)';
+        main.style.opacity = '1';
+        
+        // Restore body scroll
+        document.body.style.overflow = '';
+      }
+
+      // Close drawer on escape key
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeDrawer();
+          closeSearchModal();
+        }
+      });
+
+      // ============================================
+      // UNIVERSAL SEARCH MODAL
+      // ============================================
+      let searchDebounceTimer = null;
+      const SEARCH_DEBOUNCE_DELAY = 400;
+
+      function openSearchModal() {
+        const modal = document.getElementById('searchModal');
+        const input = document.getElementById('universalSearchInput');
+        modal.classList.add('show');
+        setTimeout(() => input.focus(), 100);
+        
+        // Hide mobile nav when search is open
+        mobileNav.classList.add('hidden');
+      }
+
+      function closeSearchModal() {
+        const modal = document.getElementById('searchModal');
+        const input = document.getElementById('universalSearchInput');
+        modal.classList.remove('show');
+        input.value = '';
+        showEmptyState();
+        
+        // Show mobile nav again
+        if (window.innerWidth <= 768) {
+          setTimeout(() => {
+            if (window.pageYOffset > 100) {
+              mobileNav.classList.remove('hidden');
+            }
+          }, 300);
+        }
+      }
+
+      // Close modal on overlay click
+      document.getElementById('searchModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+          closeSearchModal();
+        }
+      });
+
+      // Keyboard shortcuts
+      document.addEventListener('keydown', function(e) {
+        // Ctrl+K or Cmd+K to open search
+        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+          e.preventDefault();
+          openSearchModal();
+        }
+        // ESC to close
+        if (e.key === 'Escape') {
+          closeSearchModal();
+          closeDrawer();
+        }
+      });
+
+      // Universal search functionality
+      const searchInput = document.getElementById('universalSearchInput');
+      const searchResults = document.getElementById('searchResults');
+
+      searchInput.addEventListener('input', function(e) {
+        const query = e.target.value.trim();
+
+        clearTimeout(searchDebounceTimer);
+
+        if (query.length < 2) {
+          showEmptyState();
+          return;
+        }
+
+        // Show loading state
+        showLoadingState();
+
+        searchDebounceTimer = setTimeout(() => {
+          performUniversalSearch(query);
+        }, SEARCH_DEBOUNCE_DELAY);
+      });
+
+      async function performUniversalSearch(query) {
+        try {
+          const response = await fetch(`/leads/api/universal-search/?q=${encodeURIComponent(query)}`);
+          const data = await response.json();
+
+          if (data.results && data.results.length > 0) {
+            displaySearchResults(data.results);
+          } else {
+            showNoResults(query);
+          }
+        } catch (error) {
+          console.error('Search error:', error);
+          showErrorState();
+        }
+      }
+
+      function displaySearchResults(results) {
+        let html = '';
+
+        // Group results by stage
+        const grouped = {};
+        results.forEach(result => {
+          const stage = result.stage_display || 'Other';
+          if (!grouped[stage]) {
+            grouped[stage] = [];
+          }
+          grouped[stage].push(result);
+        });
+
+        // Display grouped results
+        Object.keys(grouped).forEach(stage => {
+          html += `<div class="search-category">${stage} (${grouped[stage].length})</div>`;
+
+          grouped[stage].forEach(result => {
+            const detailUrl = getDetailUrl(result.stage_code, result.id);
+            const initials = result.company_name.substring(0, 2).toUpperCase();
+
+            html += `
+              <div class="search-result-item" onclick="window.location.href='${detailUrl}'; closeSearchModal();">
+                <div class="result-icon">${initials}</div>
+                <div class="result-content">
+                  <div class="result-title">${result.company_name}</div>
+                  <div class="result-details">
+                    ${result.contact_name ? `
+                      <div class="result-detail">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                          <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                        ${result.contact_name}
+                      </div>
+                    ` : ''}
+                    ${result.contact_email ? `
+                      <div class="result-detail">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                          <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                        ${result.contact_email}
+                      </div>
+                    ` : ''}
+                    ${result.contact_phone ? `
+                      <div class="result-detail">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                        +91 ${result.contact_phone}
+                      </div>
+                    ` : ''}
+                    <span class="result-stage">${result.stage_display}</span>
+                  </div>
+                </div>
+              </div>
+            `;
+          });
+        });
+
+        searchResults.innerHTML = html;
+      }
+
+      function showLoadingState() {
+        searchResults.innerHTML = `
+          <div class="search-loading">
+            <div class="search-spinner"></div>
+            <div style="font-size: 14px; color: #8E8E93;">Searching...</div>
+          </div>
+        `;
+      }
+
+      function showEmptyState() {
+        searchResults.innerHTML = `
+          <div class="search-empty">
+            <svg class="search-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <div class="search-empty-title">Search your leads</div>
+            <div class="search-empty-text">
+              Type to search by company name, contact name, email, or phone number
+            </div>
+          </div>
+        `;
+      }
+
+      function showNoResults(query) {
+        searchResults.innerHTML = `
+          <div class="search-empty">
+            <svg class="search-empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="m21 21-4.35-4.35"></path>
+            </svg>
+            <div class="search-empty-title">No results found</div>
+            <div class="search-empty-text">
+              No leads found matching "${query}"
+            </div>
+          </div>
+        `;
+      }
+
+      function showErrorState() {
+        searchResults.innerHTML = `
+          <div class="search-empty">
+            <div class="search-empty-title">Search error</div>
+            <div class="search-empty-text">
+              Please try again
+            </div>
+          </div>
+        `;
+      }
+
+      function getDetailUrl(stageCode, leadId) {
+        const baseUrl = '/leads/';
+        switch(stageCode) {
+          case 'prospect':
+            return `${baseUrl}${leadId}/`;
+          case 'requirement_yes':
+            return `${baseUrl}requirement-yes/${leadId}/`;
+          case 'regret':
+            return `${baseUrl}regret-offers/${leadId}/`;
+          case 'future':
+            return `${baseUrl}future-requirements/${leadId}/`;
+          default:
+            return `${baseUrl}${leadId}/`;
+        }
+      }
+
+      // ============================================
+      // MOBILE-SPECIFIC ENHANCEMENTS
+      // ============================================
+      
+      // Hide mobile nav on keyboard focus (prevents covering input)
+      const inputs = document.querySelectorAll('input, textarea, select');
+      inputs.forEach(input => {
+        input.addEventListener('focus', () => {
+          if (window.innerWidth <= 768) {
+            mobileNav.classList.add('hidden');
+          }
+        });
+        
+        input.addEventListener('blur', () => {
+          if (window.innerWidth <= 768) {
+            setTimeout(() => {
+              mobileNav.classList.remove('hidden');
+            }, 300);
+          }
+        });
+      });
+
+      // Add haptic feedback on mobile
+      function hapticFeedback() {
+        if ('vibrate' in navigator) {
+          navigator.vibrate(10);
+        }
+      }
+
+      // Add haptic feedback to mobile nav items
+      document.querySelectorAll('.mobile-nav-item').forEach(item => {
+        item.addEventListener('touchstart', hapticFeedback);
+      });
+
+      // Initialize
+      document.addEventListener('DOMContentLoaded', function() {
+        // Add transition after load to prevent initial animation
+        setTimeout(() => {
+          navbar.style.transition = 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+          mobileNav.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+        }, 100);
+        
+        // Check initial scroll position
+        updateNavbarOnScroll();
+      });
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+    {% block scripts %}{% endblock %}
+
+  </body>
+</html>

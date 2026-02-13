@@ -1,0 +1,4 @@
+1) we can search based on client name , email , 
+2) redirect issue from the followup list 
+3)in requirement yes stage unable to segregate which leads have completed which step 
+4)after filling the form dont redirect to the prospect detail page 
