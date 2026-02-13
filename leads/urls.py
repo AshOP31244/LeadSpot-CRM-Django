@@ -32,6 +32,9 @@ urlpatterns = [
     path('customers/', views.customers_list, name='customers_list'),
     path('customers/<int:lead_id>/', views.customer_detail, name='customer_detail'),
     
+    # ✅ NEW: Follow-up action (must be before the catch-all pattern)
+    path('<int:lead_id>/send-followup/', views.send_followup, name='send_followup'),
+    
     # ✅ MOVE THIS TO THE BOTTOM (catch-all pattern)
     path('<int:lead_id>/', views.lead_detail, name='lead_detail'),
 ]

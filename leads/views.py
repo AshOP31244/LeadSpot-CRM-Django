@@ -63,6 +63,40 @@ def lead_detail(request, lead_id):
         return HttpResponseForbidden("Only marketing can update prospect leads.")
 
     if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # ✅ NEW: Handle Follow-up Sending
+        if action == 'send_followup':
+            with transaction.atomic():
+                # Get current followup status
+                followup_status = get_current_reconnect_followup_count(lead)
+                
+                if not followup_status['can_send_followup']:
+                    messages.error(request, 'Maximum 3 followups already sent for this cycle')
+                    return redirect('lead_detail', lead_id=lead.id)
+                
+                next_followup_num = followup_status['followup_count'] + 1
+                today = timezone.now().date()
+                remark = f"Followup Sent {next_followup_num}"
+                
+                # Create call history entry
+                CallHistory.objects.create(
+                    lead=lead,
+                    actual_call_date=today,
+                    outcome='reconnect',
+                    remark=remark,
+                    created_by=request.user
+                )
+                
+                # Update lead
+                lead.last_call_date = today
+                lead.last_remark = remark
+                lead.save()
+                
+                messages.success(request, f'✅ {remark} successfully recorded')
+                return redirect('lead_detail', lead_id=lead.id)
+        
+        # Original POST handling for marketing call outcomes
         with transaction.atomic():
             actual_call_date = request.POST.get('actual_call_date')
             expected_call_date = request.POST.get('expected_call_date')
@@ -72,7 +106,7 @@ def lead_detail(request, lead_id):
                 messages.error(request, 'Please fill all required fields')
                 return render(request, 'leads/lead_detail.html', {'lead': lead})
 
-            # 🔹 Get outcome-specific remark
+            # Get outcome-specific remark
             outcome_remark = ''
             if outcome == 'yes':
                 outcome_remark = request.POST.get('remark', '')
@@ -83,7 +117,7 @@ def lead_detail(request, lead_id):
             elif outcome == 'regret':
                 outcome_remark = request.POST.get('remark_regret', '')
 
-            # 🔹 Always save call history FIRST (important)
+            # Always save call history FIRST
             CallHistory.objects.create(
                 lead=lead,
                 expected_call_date=expected_call_date or None,
@@ -95,32 +129,177 @@ def lead_detail(request, lead_id):
 
             if outcome == 'yes':
                 return handle_requirement_yes(request, lead)
-
             elif outcome == 'regret':
                 return handle_regret_offer(request, lead, actual_call_date, expected_call_date)
-
             elif outcome == 'future':
                 return handle_future_requirement(request, lead, actual_call_date, expected_call_date)
-
             elif outcome == 'reconnect':
                 return handle_reconnect(request, lead, actual_call_date, expected_call_date)
 
-    # ✅ NEW: Get call history for this lead
+    # ✅ GET: Calculate followup status for display
+    followup_status = get_current_reconnect_followup_count(lead)
+    
+    # Get call history
     call_history = CallHistory.objects.filter(
         lead=lead
     ).select_related('created_by').order_by('-actual_call_date')
     
-    # ✅ NEW: Get only reconnect history (optional - you can show all)
-    reconnect_history = CallHistory.objects.filter(
-        lead=lead,
-        outcome='reconnect'
-    ).select_related('created_by').order_by('-actual_call_date')
-
     return render(request, 'leads/lead_detail.html', {
         'lead': lead,
-        'call_history': call_history,  # All call history
-        'reconnect_history': reconnect_history  # Only reconnects
+        'call_history': call_history,
+        'followup_status': followup_status,  # ✅ NEW
     })
+
+
+# ===========================================
+# SEND FOLLOWUP (PROSPECT STAGE)
+# ===========================================
+@login_required
+def send_followup(request, lead_id):
+    """Send a followup for a lead in reconnect stage"""
+    lead = get_object_or_404(Lead, id=lead_id)
+
+    if request.user.profile.role != 'marketing':
+        return HttpResponseForbidden("Only marketing can update prospect leads.")
+
+    with transaction.atomic():
+        # Get current followup status
+        followup_status = get_current_reconnect_followup_count(lead)
+        
+        if not followup_status['can_send_followup']:
+            messages.error(request, 'Maximum 3 followups already sent for this cycle')
+            return redirect('lead_detail', lead_id=lead.id)
+        
+        next_followup_num = followup_status['followup_count'] + 1
+        today = timezone.now().date()
+        remark = f"Followup Sent {next_followup_num}"
+        
+        # Create call history entry
+        CallHistory.objects.create(
+            lead=lead,
+            actual_call_date=today,
+            outcome='reconnect',
+            remark=remark,
+            created_by=request.user
+        )
+        
+        # Update lead
+        lead.last_call_date = today
+        lead.last_remark = remark
+        lead.save()
+        
+        messages.success(request, f'✅ {remark} successfully recorded')
+        return redirect('lead_detail', lead_id=lead.id)
+
+# ===========================================
+# EMAIL HELPER (FUTURE IMPLEMENTATION)
+# ===========================================
+def send_followup_email(lead, followup_number, user):
+    """
+    Send follow-up reminder email to the lead contact.
+    
+    Args:
+        lead: Lead object
+        followup_number: Which follow-up (1, 2, or 3)
+        user: User who triggered the follow-up
+    
+    Future Implementation:
+        - Load email template based on followup_number
+        - Personalize with lead details
+        - Send via SMTP or email service (SendGrid, Mailgun, etc.)
+        - Log email delivery status
+    """
+    # TODO: Implement email sending logic
+    # Example structure:
+    """
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
+    
+    # Choose template based on follow-up number
+    template_map = {
+        1: 'emails/followup_1.html',
+        2: 'emails/followup_2.html',
+        3: 'emails/followup_3_final.html',
+    }
+    
+    # Render email template
+    html_message = render_to_string(template_map[followup_number], {
+        'lead': lead,
+        'followup_number': followup_number,
+        'sender_name': user.get_full_name() or user.username,
+        'company_name': 'Your Company Name',
+    })
+    
+    # Send email
+    send_mail(
+        subject=f'Follow-up {followup_number}: {lead.company_name}',
+        message='',  # Plain text version
+        from_email='noreply@yourcompany.com',
+        recipient_list=[lead.contact_email],
+        html_message=html_message,
+        fail_silently=False,
+    )
+    
+    # Log email sent
+    print(f"Follow-up email {followup_number} sent to {lead.contact_email}")
+    """
+    pass  # Placeholder for now
+
+
+# ===========================================
+# HELPER: Calculate Followup Count for Current Reconnect Cycle
+# ===========================================
+def get_current_reconnect_followup_count(lead):
+    
+    
+    # Get all call history ordered by date (newest first)
+    all_history = CallHistory.objects.filter(lead=lead).order_by('-actual_call_date')
+    
+    if not all_history.exists():
+        return {
+            'followup_count': 0,
+            'can_send_followup': False,
+            'last_main_outcome_date': None,
+            'is_in_reconnect_cycle': False
+        }
+    
+    # Find the most recent MAIN outcome (non-followup reconnect)
+    # This marks the start of the current cycle
+    last_main_outcome = None
+    for history in all_history:
+        # Check if this is a real reconnect (not a followup)
+        if history.outcome == 'reconnect' and not history.remark.startswith('Followup Sent'):
+            last_main_outcome = history
+            break
+        # If we hit a different outcome, the reconnect cycle hasn't started
+        elif history.outcome != 'reconnect':
+            break
+    
+    # If no reconnect found, lead is not in a reconnect cycle
+    if not last_main_outcome:
+        return {
+            'followup_count': 0,
+            'can_send_followup': False,
+            'last_main_outcome_date': None,
+            'is_in_reconnect_cycle': False
+        }
+    
+    # Count followups AFTER the last main reconnect
+    followup_count = CallHistory.objects.filter(
+        lead=lead,
+        outcome='reconnect',
+        actual_call_date__gte=last_main_outcome.actual_call_date,
+        remark__startswith='Followup Sent'
+    ).count()
+    
+    return {
+        'followup_count': followup_count,
+        'can_send_followup': followup_count < 3,
+        'last_main_outcome_date': last_main_outcome.actual_call_date,
+        'is_in_reconnect_cycle': True
+    }
+
+
 
 # ===========================================
 # HANDLE REQUIREMENT YES
