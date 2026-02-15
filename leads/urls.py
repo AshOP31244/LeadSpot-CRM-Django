@@ -2,6 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
+    # ✨ NEW: Dashboard (Home Page)
+    path('', views.dashboard, name='dashboard'),
+    
     # Duplicate detection API
     path('api/check-duplicates/', views.check_duplicates, name='check_duplicates'),
 
@@ -9,8 +12,8 @@ urlpatterns = [
     path('api/universal-search/', views.universal_search, name='universal_search'),
 
     # Prospect Stage
-    path('', views.lead_list, name='lead_list'),
-    path('add/', views.add_lead, name='add_lead'),
+    path('prospects/', views.lead_list, name='lead_list'),
+    path('prospects/add/', views.add_lead, name='add_lead'),
     
     # Requirement Yes Stage
     path('requirement-yes/', views.requirement_yes_list, name='requirement_yes_list'),
@@ -32,9 +35,9 @@ urlpatterns = [
     path('customers/', views.customers_list, name='customers_list'),
     path('customers/<int:lead_id>/', views.customer_detail, name='customer_detail'),
     
-    # ✅ NEW: Follow-up action (must be before the catch-all pattern)
-    path('<int:lead_id>/send-followup/', views.send_followup, name='send_followup'),
+    # Follow-up action
+    path('prospects/<int:lead_id>/send-followup/', views.send_followup, name='send_followup'),
     
-    # ✅ MOVE THIS TO THE BOTTOM (catch-all pattern)
-    path('<int:lead_id>/', views.lead_detail, name='lead_detail'),
+    # Lead detail (catch-all - must be last)
+    path('prospects/<int:lead_id>/', views.lead_detail, name='lead_detail'),
 ]

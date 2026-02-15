@@ -7,7 +7,7 @@ import json
 from datetime import datetime, timedelta
 from django.urls import reverse
 from django.utils import timezone
-from django.db.models import Q
+from django.db.models import Q,Count
 from difflib import SequenceMatcher 
 
 from .models import (
@@ -17,6 +17,214 @@ from .models import (
 )
 from .forms import LeadCreateForm
 
+@login_required
+def dashboard(request):
+    """
+    Comprehensive dashboard with all key metrics and insights
+    """
+    today = timezone.now().date()
+    week_start = today - timedelta(days=7)
+    month_start = today.replace(day=1)
+    
+    # ============================================
+    # 1️⃣ LEAD OVERVIEW
+    # ============================================
+    total_leads = Lead.objects.count()
+    prospect_leads = Lead.objects.filter(stage='prospect').count()
+    requirement_yes_leads = Lead.objects.filter(stage='requirement_yes').count()
+    future_leads = Lead.objects.filter(stage='future').count()
+    regret_leads = Lead.objects.filter(stage='regret').count()
+    
+    # Converted Customers (Order Completed)
+    converted_customers = RequirementYes.objects.filter(
+        sales_stage='order_completed'
+    ).count()
+    
+    # Lost Orders
+    lost_orders = RequirementYes.objects.filter(
+        sales_stage__in=['not_converted', 'order_lost']
+    ).count()
+    
+    # ============================================
+    # 2️⃣ FOLLOW-UP INSIGHTS
+    # ============================================
+    
+    # Overdue followups (Future Requirements)
+    overdue_future_followups = FutureRequirement.objects.filter(
+        followup_date__lt=today
+    ).select_related('lead').count()
+    
+    # Today's followups
+    today_future_followups = FutureRequirement.objects.filter(
+        followup_date=today
+    ).select_related('lead').count()
+    
+    # Upcoming followups (next 7 days)
+    upcoming_future_followups = FutureRequirement.objects.filter(
+        followup_date__gt=today,
+        followup_date__lte=today + timedelta(days=7)
+    ).select_related('lead').count()
+    
+    # Regret followups
+    overdue_regret_followups = RegretOffer.objects.filter(
+        followup_date__lt=today
+    ).select_related('lead').count()
+    
+    today_regret_followups = RegretOffer.objects.filter(
+        followup_date=today
+    ).select_related('lead').count()
+    
+    upcoming_regret_followups = RegretOffer.objects.filter(
+        followup_date__gt=today,
+        followup_date__lte=today + timedelta(days=7)
+    ).select_related('lead').count()
+    
+    # Total followups
+    total_overdue = overdue_future_followups + overdue_regret_followups
+    total_today = today_future_followups + today_regret_followups
+    total_upcoming = upcoming_future_followups + upcoming_regret_followups
+    
+    # ============================================
+    # 3️⃣ MEETING INSIGHTS
+    # ============================================
+    
+    # Meetings today
+    meetings_today = Meeting.objects.filter(
+        meeting_date=today
+    ).select_related('requirement__lead').count()
+    
+    # Upcoming meetings (next 7 days)
+    upcoming_meetings = Meeting.objects.filter(
+        meeting_date__gt=today,
+        meeting_date__lte=today + timedelta(days=7)
+    ).select_related('requirement__lead').count()
+    
+    # Past meetings without outcome
+    past_meetings_no_outcome = Meeting.objects.filter(
+        meeting_date__lt=today,
+        outcome__isnull=True
+    ).select_related('requirement__lead').count()
+    
+    # ============================================
+    # 4️⃣ SALES PIPELINE
+    # ============================================
+    
+    pipeline_stages = {
+        'costing_created': RequirementYes.objects.filter(sales_stage='costing_created').count(),
+        'quotation_created': RequirementYes.objects.filter(sales_stage='quotation_created').count(),
+        'quotation_sent': RequirementYes.objects.filter(sales_stage='quotation_sent').count(),
+        'quotation_revision': RequirementYes.objects.filter(sales_stage='quotation_revision').count(),
+        'quotation_accepted': RequirementYes.objects.filter(sales_stage='quotation_accepted').count(),
+        'po_received': RequirementYes.objects.filter(sales_stage='po_received').count(),
+        'oa_created': RequirementYes.objects.filter(sales_stage='oa_created').count(),
+        'oa_sent': RequirementYes.objects.filter(sales_stage='oa_sent').count(),
+        'oa_revision': RequirementYes.objects.filter(sales_stage='oa_revision').count(),
+        'oa_accepted': RequirementYes.objects.filter(sales_stage='oa_accepted').count(),
+        'order_completed': RequirementYes.objects.filter(sales_stage='order_completed').count(),
+        'order_lost': RequirementYes.objects.filter(sales_stage='order_lost').count(),
+    }
+    
+    # ============================================
+    # 5️⃣ PERFORMANCE INSIGHTS
+    # ============================================
+    
+    # Leads added this month
+    leads_added_this_month = Lead.objects.filter(
+        created_at__gte=month_start
+    ).count()
+    
+    # Conversions this month (moved to requirement_yes)
+    conversions_this_month = StageHistory.objects.filter(
+        to_stage='requirement_yes',
+        changed_at__gte=month_start
+    ).count()
+    
+    # Conversion rate
+    if prospect_leads > 0:
+        conversion_rate = round((requirement_yes_leads / (prospect_leads + requirement_yes_leads)) * 100, 1)
+    else:
+        conversion_rate = 0
+    
+    # Meetings scheduled this month
+    meetings_this_month = Meeting.objects.filter(
+        created_at__gte=month_start
+    ).count()
+    
+    # Orders closed this month
+    orders_this_month = RequirementYes.objects.filter(
+        sales_stage='order_completed',
+        updated_at__gte=month_start
+    ).count()
+    
+    # ============================================
+    # 📊 RECENT ACTIVITIES (Latest 10)
+    # ============================================
+    
+    recent_leads = Lead.objects.order_by('-created_at')[:5]
+    recent_meetings = Meeting.objects.select_related('requirement__lead').order_by('-meeting_date')[:5]
+    recent_stage_changes = StageHistory.objects.select_related('lead', 'changed_by').order_by('-changed_at')[:10]
+    
+    # ============================================
+    # 🎯 TOP PERFORMERS (if multiple users)
+    # ============================================
+    
+    top_converters = (
+        Lead.objects
+        .filter(created_by__isnull=False)
+        .values('created_by__username')
+        .annotate(
+            total_leads=Count('id'),
+            converted=Count('id', filter=Q(stage='requirement_yes'))
+        )
+        .order_by('-converted')[:5]
+    )
+    
+    # ============================================
+    # CONTEXT
+    # ============================================
+    
+    context = {
+        # Lead Overview
+        'total_leads': total_leads,
+        'prospect_leads': prospect_leads,
+        'requirement_yes_leads': requirement_yes_leads,
+        'future_leads': future_leads,
+        'regret_leads': regret_leads,
+        'converted_customers': converted_customers,
+        'lost_orders': lost_orders,
+        
+        # Follow-up Insights
+        'overdue_followups': total_overdue,
+        'today_followups': total_today,
+        'upcoming_followups': total_upcoming,
+        'overdue_future': overdue_future_followups,
+        'overdue_regret': overdue_regret_followups,
+        
+        # Meeting Insights
+        'meetings_today': meetings_today,
+        'upcoming_meetings': upcoming_meetings,
+        'past_meetings_no_outcome': past_meetings_no_outcome,
+        
+        # Sales Pipeline
+        'pipeline_stages': pipeline_stages,
+        
+        # Performance
+        'leads_added_this_month': leads_added_this_month,
+        'conversions_this_month': conversions_this_month,
+        'conversion_rate': conversion_rate,
+        'meetings_this_month': meetings_this_month,
+        'orders_this_month': orders_this_month,
+        
+        # Recent Activity
+        'recent_leads': recent_leads,
+        'recent_meetings': recent_meetings,
+        'recent_stage_changes': recent_stage_changes,
+        
+        # Top Performers
+        'top_converters': top_converters,
+    }
+    
+    return render(request, 'leads/dashboard.html', context)
 
 # ===========================================
 # HELPER FUNCTION: Clear Lead States
